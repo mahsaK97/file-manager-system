@@ -2,11 +2,12 @@
 #include <stdlib.h>
 #include <dirent.h>
 #include <string.h>
+#include "search_operation.h"
 
 
-void search_by_extension()
+void search_by_extension(FileManager *fm)
 {
-    char buffer[10];
+
     char answer;
     char extension[100];
     char folder_name[100];
@@ -14,8 +15,8 @@ void search_by_extension()
     struct dirent *entry;
 
     printf("do you want to search by extension?[y/n]\n");
-    fgets(buffer, sizeof(buffer), stdin);
-    answer = buffer[0];
+    fgets(fm->buffer, 1024, stdin);
+    answer =fm->buffer[0];
     if(answer =='n' || answer == 'N')
     {
         printf("okay. back to menu...");
@@ -68,19 +69,18 @@ void search_by_extension()
 
 
 
-void search_by_name()
+void search_by_name(FileManager *fm)
 {
     char file_name[100];
     char folder_name[100];
     int found =0;
-    char buffer[10];
     char answer;
     DIR  *dir;
     struct  dirent *entry;
 
     printf("do you want to search a file in a folder?[y/n]");
-    fgets(buffer,sizeof(buffer) , stdin);
-    answer = buffer[0];
+    fgets(fm->buffer, 1024 , stdin);
+    answer =fm->buffer[0];
 
 
     if(answer == 'n' || answer == 'N')
@@ -155,20 +155,19 @@ void search_by_name()
 
 
 
-void search_menu()
+void search_menu(FileManager *fm)
 {
     long option;
-    char buffer[10];
     char *endptr;
 
     printf("search menu:\n");
     printf("1.search by name\n");
     printf("2.search by extension\n");
 
-    fgets(buffer, sizeof(buffer) , stdin);
-    option = strtol(buffer , &endptr , 10);
+    fgets(fm ->buffer, 1024 , stdin);
+    option = strtol(fm ->buffer , &endptr , 10);
 
-    if(endptr == buffer || (*endptr != '\0' && *endptr != '\n'))
+    if(endptr == fm->buffer || (*endptr != '\0' && *endptr != '\n'))
     {
         printf("invalid input.\n");
         return;
@@ -177,12 +176,12 @@ void search_menu()
     switch(option)
     {
     case 1:
-        search_by_name();
+        search_by_name(fm);
         break;
 
 
     case 2:
-        search_by_extension();
+        search_by_extension(fm);
         break;
     }
 

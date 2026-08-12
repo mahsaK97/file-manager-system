@@ -27,14 +27,14 @@
 
 
 
-void create_folder()
+void create_folder(FileManager *fm)
 {
 
     char name_of_folder[100];
     printf("do you want to make a folder?[y/n]\n");
-    char buffer[10];
-    fgets(buffer , sizeof(buffer) , stdin);
-    char answer = buffer[0];
+
+    fgets(fm->buffer , 1024 , stdin);
+    char answer = fm->buffer[0];
     if(answer == 'y' || answer == 'Y')
     {
         printf("enter name of folder:\n");
@@ -69,14 +69,13 @@ void create_folder()
 
 
 
-void delete_folder()
+void delete_folder(FileManager *fm)
 {
     char folder_name[100];
 
     printf("do you want to delete a folder?[y/n]\n");
-    char buffer[10];
-    fgets(buffer , sizeof(buffer) , stdin);
-    char answer = buffer[0];
+    fgets(fm -> buffer , 1024 , stdin);
+    char answer = fm->buffer[0];
 
 
     if(answer == 'N' || answer =='n')
@@ -118,11 +117,10 @@ void delete_folder()
 
 
 
-void file_list_in_folder()
+void file_list_in_folder(FileManager *fm)
 {
     DIR *dir;
     char folder_name[100];
-    char buffer[10];
     char answer;
     struct dirent *entry;
 
@@ -130,8 +128,8 @@ void file_list_in_folder()
 
 
     printf("Do you want to see a list of a folder?[y/n]\n");
-    fgets(buffer , sizeof(buffer) , stdin);
-    answer = buffer[0];
+    fgets(fm ->buffer , 1024 , stdin);
+    answer = fm->buffer[0];
 
     if(answer == 'N' || answer == 'n')
     {

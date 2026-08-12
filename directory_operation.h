@@ -1,9 +1,9 @@
 #ifndef FOLDER_OPERATION_H
 #define FOLDER_OPERATION_H
-
-void create_folder();
-void delete_folder();
-void file_list_in_folder();
+#include "file_manager.h"
+void create_folder(FileManager *fm);
+void delete_folder(FileManager *fm);
+void file_list_in_folder(FileManager *fm);
 
 
 #endif //

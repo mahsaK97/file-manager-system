@@ -3,11 +3,20 @@
 #include "file_operations.h"
 #include "directory_operation.h"
 #include "search_operation.h"
+#include "file_manager.h"
 
 
 
 int main()
 {
+
+    FileManager fm;
+    fm.buffer = malloc(1024 *sizeof(char));
+    if(fm.buffer == NULL)
+    {
+         printf("Memory allocation failed.\n");
+         return 1;
+    }
     long option;
     do
     { printf("enter the number of option you want to do:\n");
@@ -24,7 +33,7 @@ int main()
         printf("11.search menu\n");
         printf("12.Exit\n");
 
-        char buffer[100];
+        char buffer[10];
         fgets(buffer, sizeof(buffer) , stdin);
         char *endptr;
         option =strtol(buffer , &endptr , 10);
@@ -40,7 +49,7 @@ int main()
             create_file();
                       break;
         case 2:
-            delete_file();
+            delete_file(&fm);
                       break;
         case 3:
             update_file();
@@ -53,25 +62,25 @@ int main()
                       break;
 
         case 6:
-            copy_file();
+            copy_file(&fm);
                       break;
 
         case 7:
-            create_folder();
+            create_folder(&fm);
                       break;
         case 8:
-            delete_folder();
+            delete_folder(&fm);
                       break;
 
         case 9:
-            file_list_in_folder();
+            file_list_in_folder(&fm);
                       break;
 
         case 10:
-            move_file();
+            move_file(&fm);
                   break;
         case 11:
-            search_menu();
+            search_menu(&fm);
             break;
 
 
@@ -86,5 +95,9 @@ int main()
      }
 
 } while(option != 12);
+
+free(fm.buffer);
+
+
 return 0;
 }

@@ -180,7 +180,7 @@ void update_file()
 }
 
 
-void delete_file()
+void delete_file(FileManager *fm)
 {
 
      char file_name[100];
@@ -188,12 +188,11 @@ void delete_file()
      printf("enter file name:");
      fgets(file_name , sizeof(file_name) , stdin);
      file_name[strcspn(file_name , "\n")] = '\0';
-     char buffer[10];
      char delete_option;
 
      printf("do you want to delete %s ? (y/n)" , file_name);
-     fgets(buffer , sizeof(buffer) , stdin);
-     delete_option = buffer[0];
+     fgets(fm -> buffer , 1024 , stdin);
+     delete_option = fm->buffer[0];
 
      if(delete_option == 'y' || delete_option == 'Y')
      {
@@ -264,18 +263,20 @@ void rename_file()
 
 
 
-void copy_file()
+void copy_file(FileManager *fm)
 {
     char dest[200];
     char source[200];
-    char buffer[1024];
+    FILE *dest_ptr;
 
     printf("enter source file name:");
     fgets(source, sizeof(source) , stdin);
     source[strcspn(source, "\n")] ='\0';
-
-
-
+    if(source[0] == '\0')
+    {
+        printf("file name can't be empty.\n");
+        return;
+    }
     FILE *src = fopen(source , "r");
     if(src == NULL)
     {
@@ -286,8 +287,28 @@ void copy_file()
     printf("enter destination file name:");
     fgets(dest, sizeof(dest) , stdin);
     dest[strcspn(dest,"\n")] = '\0';
+    if(dest[0] == '\0')
+    {
+        printf("file name can't be empty.\n");
+        fclose(src);
+        return;
+    }
 
+    if(strcmp(source , dest) == 0)
+    {
+        printf("source and destination can not be the same file.\n");
+        fclose(src);
+        return;
+    }
 
+    dest_ptr = fopen(dest, "r");
+    if(dest_ptr != NULL)
+    {
+        fclose(dest_ptr);
+        fclose(src);
+        printf("there is a file with this name already in the folder.\n");
+        return;
+    }
     FILE *dst = fopen(dest, "w");
     if(dst == NULL)
     {
@@ -297,9 +318,9 @@ void copy_file()
 
     }
 
-    while(fgets(buffer , sizeof(buffer) , src) != NULL)
+    while(fgets(fm -> buffer , 1024 , src) != NULL)
     {
-        fputs(buffer, dst);
+        fputs(fm->buffer, dst);
     }
 
         printf("file copied successfully!\n");
@@ -320,18 +341,23 @@ void copy_file()
 
 
 
-void move_file()
+void move_file(FileManager *fm)
 {
     char file_name[100];
-    char buffer[10];
     char answer;
     FILE *fp;
     DIR *dir;
+    FILE *des_check;
+    char des_answer;
     char folder_name[100];
     char destination[300];
     printf("do you want to move a file?[y/n]\n");
-    fgets(buffer , sizeof(buffer) , stdin);
-    answer = buffer[0];
+    if(fgets(fm->buffer , 1024 , stdin)== NULL)
+    {
+        printf("error reading input.\n");
+        return;
+    }
+    answer = fm->buffer[0];
 
     if(answer == 'n' || answer =='N')
     {
@@ -372,14 +398,29 @@ void move_file()
             }
 
         closedir(dir);
-        sprintf(destination, "%s%s%s" ,folder_name, PATH_SEPARATOR,  file_name);
-                if(rename(file_name , destination) == 0)
-                  {
-                    printf("file moved successfully.\n");
-                    return;
-                  }
+        snprintf(destination,sizeof(destination), "%s%s%s" ,folder_name, PATH_SEPARATOR,  file_name);
+             des_check =fopen(destination , "r");
+             if(des_check != NULL)
+             {
+                 fclose(des_check);
+                 printf("a file with this name already exists in the destination folder. overwrite?[y/n]\n");
+                    fgets(fm->buffer , 1024 , stdin);
+                    des_answer=fm->buffer[0];
+                    if(des_answer != 'y' || des_answer !='Y')
+                    {
+                        printf("move cancelled.\n");
+                        return;
+                    }
+             }
 
-                else
+              if(rename(file_name , destination) == 0)
+              {
+                   printf("file moved successfully.\n");
+                   return;
+              }
+
+
+              else
                 {
                     perror("move file failed.");
                 }
@@ -387,7 +428,7 @@ void move_file()
 
     else
     {
-        printf("invalid input.");
+        printf("invalid input.\n");
         return;
     }
 
