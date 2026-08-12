@@ -58,7 +58,7 @@ int main()
             read_file();
                       break;
         case 5:
-            rename_file();
+            rename_file(&fm);
                       break;
 
         case 6:

@@ -62,12 +62,20 @@ void create_file()
           else if(answer_2 == 'y' || answer_2 == 'Y')
 
               {
-                 char content[500];
+                 FILE *content_ptr = malloc(2048 * sizeof (char));
+                 if(content_ptr == NULL)
+                 {
+                     printf("Memory allocation failed.\n");
+                     return;
+                 }
                  printf("enter content:");
-                 fgets(content , sizeof(content) , stdin);
-                 content[strcspn(content, "\n")] = '\0';
-                 fprintf(fp , "%s" , content);
+                 fgets(content_ptr , 2048 , stdin);
+                 content_ptr[strcspn(content_ptr, "\n")] = '\0';
+                 fprintf(fp , "%s" , content_ptr);
               }
+
+              free(content_ptr);
+
 
 
            else
@@ -92,12 +100,17 @@ void create_file()
 void read_file()
 {
      char file_name[100];
-     char line[800];
      FILE *fp = NULL;
 
      printf("enter file name:\n");
      fgets(file_name , sizeof(file_name) , stdin);
      file_name[strcspn(file_name , "\n")] = '\0';
+     char *line_ptr = malloc(1000 * sizeof(char));
+     if(line_ptr == NULL)
+     {
+         printf("Memory allocation failed.\n");
+         return;
+     }
 
      fp = fopen(file_name , "r");
 
@@ -107,7 +120,7 @@ void read_file()
          return;
      }
 
-     while(fgets(line, sizeof(line) ,fp) != NULL )
+     while(fgets(line, 2048 ,fp) != NULL )
      {
 
          printf("%s" , line);
@@ -116,11 +129,12 @@ void read_file()
 
      printf("\n____END OF FILE____\n");
      fclose(fp);
+     free(line_ptr);
 }
 
 
 
-void update_file()
+void update_file(FileManager fm)
 {
      char file_name[100];
      char new_content[500];
@@ -131,16 +145,15 @@ void update_file()
      file_name[strcspn(file_name , "\n")] = '\0';
 
      printf("choose mode : \n1.append \n2.overwrite\n");
-     char buffer[100];
      char *endptr;
-     fgets(buffer, sizeof(buffer), stdin);
+     fgets(fm->buffer, 1024, stdin);
      if (buffer[0] == '\n' )
      {
          printf("invalid input.\n");
          return;
      }
-     long mode = strtol(buffer, &endptr , 10);
-     if(endptr == buffer || (*endptr !='\n' && *endptr != '\0'))
+     long mode = strtol(fm->buffer, &endptr , 10);
+     if(endptr == fm->buffer || (*endptr !='\n' && *endptr != '\0'))
      {
          printf("invalid input.\n");
          return;
@@ -168,8 +181,10 @@ void update_file()
          return;
      }
 
+     char *new_content = calloc(2048 * sizeof(char));
+
      printf("enter new content:\n");
-     fgets(new_content, sizeof(new_content) , stdin);
+     fgets(new_content, 2048 , stdin);
      new_content[strcspn(new_content , "\n")] = '\0';
      fprintf(fp , "%s" , new_content);
 
@@ -222,14 +237,19 @@ void delete_file(FileManager *fm)
 }
 
 
-void rename_file()
+void rename_file(FileManager *fm)
 {
-    char old_name[100];
-    char new_name[100];
+    char old_name[200];
+    char new_name[200];
 
     printf("enter the name of the file you want to rename:\n");
     fgets(old_name , sizeof(old_name) , stdin);
     old_name[strcspn(old_name, "\n")] = '\0';
+    if(old_name[0] == '\0')
+    {
+        printf("old name can't be empty.\n");
+        return;
+    }
 
     FILE *fp = fopen(old_name , "r");
     if (fp == NULL)
@@ -246,6 +266,26 @@ void rename_file()
     {
         printf("new name can't be empty.\n");
         return;
+    }
+
+    if(strcmp(old_name,new_name) == 0)
+    {
+        printf("old name and new name are same.\n");
+        return;
+    }
+
+    FILE *file_check = fopen(new_name , "r");
+    if(file_check != Null)
+    {
+        fclose(new_name);
+        printf("a file with this name already exists. overwrite?[y/n]\n");
+        fgets(fm -> buffer, 1 , stdin);
+        if(buffer == 'n' || buffer == 'N')
+        {
+            printf("okay. return to menu...\n");
+            return;
+
+        }
     }
 
     if(rename(old_name, new_name)== 0)
