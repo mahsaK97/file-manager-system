@@ -4,7 +4,7 @@
 
 void create_file();
 void read_file();
-void update_file();
+void update_file(FileManager *fm);
 void delete_file(FileManager *fm);
 void rename_file(FileManager *fm);
 void copy_file(FileManager *fm);

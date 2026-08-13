@@ -52,7 +52,7 @@ int main()
             delete_file(&fm);
                       break;
         case 3:
-            update_file();
+            update_file(&fm);
                       break;
         case 4:
             read_file();

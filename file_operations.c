@@ -62,19 +62,21 @@ void create_file()
           else if(answer_2 == 'y' || answer_2 == 'Y')
 
               {
-                 FILE *content_ptr = malloc(2048 * sizeof (char));
+                 char *content_ptr = malloc(2048 * sizeof (char));
                  if(content_ptr == NULL)
                  {
                      printf("Memory allocation failed.\n");
+                     fclose(file_name);
                      return;
                  }
                  printf("enter content:");
                  fgets(content_ptr , 2048 , stdin);
                  content_ptr[strcspn(content_ptr, "\n")] = '\0';
                  fprintf(fp , "%s" , content_ptr);
+                 free(content_ptr);
               }
 
-              free(content_ptr);
+
 
 
 
@@ -105,7 +107,12 @@ void read_file()
      printf("enter file name:\n");
      fgets(file_name , sizeof(file_name) , stdin);
      file_name[strcspn(file_name , "\n")] = '\0';
-     char *line_ptr = malloc(1000 * sizeof(char));
+     if(file_name[0] == '\0')
+        {
+            printf("FILE NAME CAN'T BE EMPTY.\n");
+            return;
+        }
+     char *line_ptr = malloc(2048 * sizeof(char));
      if(line_ptr == NULL)
      {
          printf("Memory allocation failed.\n");
@@ -117,10 +124,11 @@ void read_file()
      if(fp == NULL)
      {
          printf("Error: Cannot open file. It may not exist or access is denied.\n");
+         free(line_ptr);
          return;
      }
 
-     while(fgets(line, 2048 ,fp) != NULL )
+     while(fgets(line_ptr, 2048 ,fp) != NULL )
      {
 
          printf("%s" , line);
@@ -134,20 +142,24 @@ void read_file()
 
 
 
-void update_file(FileManager fm)
+void update_file(FileManager *fm)
 {
      char file_name[100];
-     char new_content[500];
      FILE *fp;
 
      printf("enter file name:\n");
      fgets(file_name , sizeof(file_name) , stdin);
      file_name[strcspn(file_name , "\n")] = '\0';
+     if(file_name[0] =='\0')
+     {
+         printf("FILE NAME CAN'T BE EMPTY.\n");
+         return;
+     }
 
      printf("choose mode : \n1.append \n2.overwrite\n");
      char *endptr;
      fgets(fm->buffer, 1024, stdin);
-     if (buffer[0] == '\n' )
+     if (fm->buffer[0] == '\n' )
      {
          printf("invalid input.\n");
          return;
@@ -181,7 +193,13 @@ void update_file(FileManager fm)
          return;
      }
 
-     char *new_content = calloc(2048 * sizeof(char));
+     char *new_content = calloc(2048 , sizeof(char));
+     if(new_content == NULL)
+     {
+         printf("memory allocation failed.\n");
+         fclose(file_name);
+         return;
+     }
 
      printf("enter new content:\n");
      fgets(new_content, 2048 , stdin);
@@ -189,8 +207,9 @@ void update_file(FileManager fm)
      fprintf(fp , "%s" , new_content);
 
      printf("file update successfully!\n");
-
+     free(new_content);
      fclose(fp);
+
 
 }
 
@@ -203,9 +222,23 @@ void delete_file(FileManager *fm)
      printf("enter file name:");
      fgets(file_name , sizeof(file_name) , stdin);
      file_name[strcspn(file_name , "\n")] = '\0';
+     if(file_name[0] =='\0')
+     {
+         printf("file name can't be empty.\n");
+         return;
+     }
      char delete_option;
+     FILE *fp = fopen(file_name, "r");
+     if(fp == NULL)
+     {
+         printf("file does not exist.\n");
 
-     printf("do you want to delete %s ? (y/n)" , file_name);
+          return;
+     }
+
+     fclose(fp);
+
+     printf("do you want to delete %s ? (y/n)\n" , file_name);
      fgets(fm -> buffer , 1024 , stdin);
      delete_option = fm->buffer[0];
 
@@ -214,7 +247,7 @@ void delete_file(FileManager *fm)
 
      if(remove(file_name)== 0)
      {
-         printf("file delete successfully.\n");
+         printf("file deleted successfully.\n");
      }
 
      else
@@ -226,7 +259,7 @@ void delete_file(FileManager *fm)
 
     else if(delete_option == 'n' || delete_option == 'N')
     {
-          printf("file not delete.");
+          printf("file not deleted.\n");
           return;
     }
 
