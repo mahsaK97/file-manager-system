@@ -19,10 +19,10 @@ void search_by_extension(FileManager *fm)
     answer =fm->buffer[0];
     if(answer =='n' || answer == 'N')
     {
-        printf("okay. back to menu...");
+        printf("okay. back to menu...\n");
         return;
     }
-    else if (answer == '\n' || answer =='\0')
+    else if (answer =='\0')
     {
         printf("input can't be empty.\n");
         return;
@@ -32,12 +32,23 @@ void search_by_extension(FileManager *fm)
         printf("enter extension (.example):");
         fgets(extension, sizeof(extension) , stdin);
         extension[strcspn(extension, "\n")] ='\0';
+        if(extension[0] == '\0')
+        {
+            printf("EXTENSION CAN'T BE EMPTY.\n");
+            return;
+        }
 
         printf("enter folder name:");
         fgets(folder_name , sizeof(folder_name) , stdin);
         folder_name[strcspn(folder_name , "\n")] = '\0';
+        if(folder_name[0]== '\0')
+        {
+            printf("FOLDER NAME CAN'T BE EMPTY.\n");
+            return;
+        }
 
         dir = opendir(folder_name);
+
         if(dir == NULL)
         {
             printf("folder not found.\n");
@@ -62,7 +73,8 @@ void search_by_extension(FileManager *fm)
 
     else
     {
-        perror("error");
+        printf("INVALID INPUT.\n");
+        return;
     }
 
 }
@@ -85,7 +97,7 @@ void search_by_name(FileManager *fm)
 
     if(answer == 'n' || answer == 'N')
        {
-           printf("back to menu...");
+           printf("back to menu...\n");
             return;
        }
 
@@ -129,31 +141,23 @@ void search_by_name(FileManager *fm)
                 }
 
                 closedir(dir);
+                if(found == 1)
+                        {
+                           printf("file found.\n");
+                        }
+                else if (found == 0)
+                        {
+                            printf("file not found.\n");
+                        }
         }
     }
     else
     {
         printf("invalid input.\n");
     }
-    if(found == 1)
-    {
-        printf("file found.\n");
-    }
-    else if (found == 0)
-    {
-        printf("file not found.\n");
-    }
+
 
 }
-
-
-
-
-
-
-
-
-
 
 void search_menu(FileManager *fm)
 {
@@ -183,6 +187,11 @@ void search_menu(FileManager *fm)
     case 2:
         search_by_extension(fm);
         break;
+
+
+    default:
+        printf("INVALID INPUT.\n");
+        return;
     }
 
 
