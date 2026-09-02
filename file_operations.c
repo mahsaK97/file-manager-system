@@ -66,7 +66,7 @@ void create_file()
                  if(content_ptr == NULL)
                  {
                      printf("Memory allocation failed.\n");
-                     fclose(file_name);
+                     fclose(fp);
                      return;
                  }
                  printf("enter content:");
@@ -131,7 +131,7 @@ void read_file()
      while(fgets(line_ptr, 2048 ,fp) != NULL )
      {
 
-         printf("%s" , line);
+         printf("%s" , line_ptr);
 
      }
 
@@ -197,7 +197,7 @@ void update_file(FileManager *fm)
      if(new_content == NULL)
      {
          printf("memory allocation failed.\n");
-         fclose(file_name);
+         fclose(fp);
          return;
      }
 
@@ -308,12 +308,12 @@ void rename_file(FileManager *fm)
     }
 
     FILE *file_check = fopen(new_name , "r");
-    if(file_check != Null)
+    if(file_check != NULL)
     {
-        fclose(new_name);
+        fclose(file_check);
         printf("a file with this name already exists. overwrite?[y/n]\n");
         fgets(fm -> buffer, 1 , stdin);
-        if(buffer == 'n' || buffer == 'N')
+        if(fm->buffer[0] == 'n' || fm->buffer[0] == 'N')
         {
             printf("okay. return to menu...\n");
             return;

@@ -4,11 +4,12 @@
 
 typedef struct
 {
-
+    char current_path[1024];
     char *buffer;
 
 
 } FileManager;
+
 
 
 #endif // FILE_MANAGER_H

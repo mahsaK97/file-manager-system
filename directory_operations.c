@@ -115,7 +115,6 @@ void delete_folder(FileManager *fm)
         if(dir == NULL)
         {
             printf("THERE IS NO FOLDER WITH THIS NAME.\n");
-            closedir(dir);
             return;
         }
         else if(RMDIR(folder_name) == 0)
