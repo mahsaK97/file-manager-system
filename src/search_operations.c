@@ -272,7 +272,7 @@ void search_recursive(const char *current_path , const char *file_name)
         {
             char new_path[1024];
 
-            sprintf(
+            snprintf(
                     new_path,
                     sizeof(new_path),
                     "%s/%s",
