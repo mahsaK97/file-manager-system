@@ -14,7 +14,7 @@
 #endif
 
 
-void create_file()
+void create_file(Input_Buffer *buffer_input)
 {
       FILE *fp =NULL;
       char file_name[100];
@@ -26,6 +26,7 @@ void create_file()
 
       printf("do you want to make a file?[y/n]\n");
       fgets(buffer_1 , sizeof(buffer_1) , stdin);
+      clear_input_buffer(buffer_input);
       answer_1= buffer_1[0];
       if (answer_1 == 'n' || answer_1 == 'N')
       {
@@ -41,6 +42,20 @@ void create_file()
           {
               printf("file name can not be empty.\n");
               return;
+          }
+          if(fopen(file_name , "r")==0)
+          {
+              printf("THERE IS ALREADY EXIST A FILE WITH THIS NAME.\n DO YOU WANT TO REPLACE IT?[Y/N]\n");
+              if(fm->buffer[0] == 'y' || fm->buffer[0] == 'Y')
+              {
+                  continue;
+              }
+              else if(fm->buffer[0]== 'N' || fm->buffer[0]=='n')
+              {
+                  printf("OKAY.BACKTO MENU...\n");
+                  return;
+              }
+
           }
 
           fp = fopen(file_name , "w");
@@ -312,7 +327,7 @@ void rename_file(FileManager *fm)
     {
         fclose(file_check);
         printf("a file with this name already exists. overwrite?[y/n]\n");
-        fgets(fm -> buffer, 1 , stdin);
+        fgets(fm -> buffer, 1024 , stdin);
         if(fm->buffer[0] == 'n' || fm->buffer[0] == 'N')
         {
             printf("okay. return to menu...\n");
@@ -437,7 +452,7 @@ void move_file(FileManager *fm)
         printf("okay. back to menu...\n");
         return;
     }
-    else if (answer == 'y' || answer == 'Y')
+    else if (answer == 'y' && answer == 'Y')
      {
         printf("enter file name: ");
         fgets(file_name , sizeof(file_name) , stdin);

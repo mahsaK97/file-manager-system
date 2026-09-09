@@ -98,6 +98,7 @@ int main()
 } while(option != 12);
 
 free(fm.buffer);
+free(fm.current_path);
 
 
 return 0;

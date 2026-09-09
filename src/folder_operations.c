@@ -18,15 +18,6 @@
 
 #endif // WIN32
 
-
-
-
-
-
-
-
-
-
 void create_folder(FileManager *fm)
 {
 
@@ -117,6 +108,9 @@ void delete_folder(FileManager *fm)
             printf("THERE IS NO FOLDER WITH THIS NAME.\n");
             return;
         }
+
+        closedir(dir);
+
         else if(RMDIR(folder_name) == 0)
         {
             printf("folder deleted successfully.\n");

@@ -54,7 +54,7 @@ void search_by_extension(FileManager *fm)
             printf("folder not found.\n");
             return;
         }
-        while((entry = readdir(dir)) != NULL)
+        while((entry = readdir(dir)) != NULL (entry->d_type != DT_DIR))
         {
 
             char *dot = strrchr(entry->d_name, '.');
@@ -133,7 +133,7 @@ void search_by_name(FileManager *fm)
             }
                 while((entry = readdir(dir)) != NULL)
                 {
-                    if((strcmp(file_name , entry->d_name)== 0))
+                    if((strcmp(file_name , entry->d_name)== 0) && entry->d_type != DT_type)
                     {
                         found = 1;
                          break;
@@ -161,7 +161,7 @@ void search_by_name(FileManager *fm)
 
 
 
-void search_by_size(FileManager *fm)
+void search_by_size(FileManager *fm, FileManager *current_path)
 {
     char answer;
     char size_in_str[50];
@@ -209,8 +209,18 @@ void search_by_size(FileManager *fm)
         if(size_in_str == endptr||(*endptr != '\n' && *endptr !='\0'))
         {
             printf("INVALID SIZE.\n");
+            closedir(dir);
             return;
         }
+        snprintf(
+                 path,
+                 sizeof(path),
+                 "%s/%s",
+                 folder_name,
+                 entry->d_name
+                 );
+
+        stat(path,&file_info);
 
         while((entry = readdir(dir))!= NULL)
         {
