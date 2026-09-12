@@ -4,8 +4,9 @@
 #include "../include/input_utls.h"
 
 
-void clear_input_buffer(Input_Buffer *Buffer_input)
+void clear_input_buffer()
 {
+    int c;
     while((c=getchar())!= '\n' && c !=EOF)
     {
 

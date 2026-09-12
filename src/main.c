@@ -1,10 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "file_operations.h"
-#include "directory_operation.h"
-#include "search_operation.h"
-#include "file_manager.h"
-
+#include "../include/file_operations.h"
+#include "../include/folder_operations.h"
+#include "../build/search_operation.h"
+#include "../build/file_manager.h"
 
 
 int main()
@@ -15,6 +14,12 @@ int main()
     fm.current_path = malloc(2048 *sizeof(char));
     if(fm.buffer == NULL)
     {
+         printf("Memory allocation failed.\n");
+         return 1;
+    }
+    if(fm.current_path == NULL)
+    {
+
          printf("Memory allocation failed.\n");
          return 1;
     }

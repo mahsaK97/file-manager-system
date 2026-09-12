@@ -1,8 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "file_operations.h"
 #include <dirent.h>
+
+
+#include "../include/file_operations.h"
+#include "../include/input_utls.h"
 
 #ifdef _WIN32
 
@@ -14,7 +17,7 @@
 #endif
 
 
-void create_file(Input_Buffer *buffer_input)
+void create_file(FileManager *fm)
 {
       FILE *fp =NULL;
       char file_name[100];
@@ -26,7 +29,7 @@ void create_file(Input_Buffer *buffer_input)
 
       printf("do you want to make a file?[y/n]\n");
       fgets(buffer_1 , sizeof(buffer_1) , stdin);
-      clear_input_buffer(buffer_input);
+      clear_input_buffer();
       answer_1= buffer_1[0];
       if (answer_1 == 'n' || answer_1 == 'N')
       {
@@ -37,22 +40,25 @@ void create_file(Input_Buffer *buffer_input)
       {
           printf("enter file name:\n");
           fgets(file_name , sizeof(file_name) , stdin);
+          clear_input_buffer();
           file_name[strcspn(file_name ,"\n")] = '\0';
           if(file_name[0] == '\0')
           {
               printf("file name can not be empty.\n");
               return;
           }
-          if(fopen(file_name , "r")==0)
+          fp =fopen(file_name , "r");
+          if(fp != NULL)
           {
               printf("THERE IS ALREADY EXIST A FILE WITH THIS NAME.\n DO YOU WANT TO REPLACE IT?[Y/N]\n");
               if(fm->buffer[0] == 'y' || fm->buffer[0] == 'Y')
               {
-                  continue;
+                  fgets(fm->buffer[0], sizeof())
               }
               else if(fm->buffer[0]== 'N' || fm->buffer[0]=='n')
               {
                   printf("OKAY.BACKTO MENU...\n");
+                  fclose(fp);
                   return;
               }
 
@@ -68,6 +74,7 @@ void create_file(Input_Buffer *buffer_input)
           printf("file create successfully!\n");
           printf("Do you want to add initial content? (y/n)");
           fgets(buffer_2 , sizeof(buffer_2), stdin);
+          clear_input_buffer();
           answer_2 = buffer_2[0];
           if (answer_2 =='n' || answer_2 == 'N')
               {
@@ -86,14 +93,11 @@ void create_file(Input_Buffer *buffer_input)
                  }
                  printf("enter content:");
                  fgets(content_ptr , 2048 , stdin);
+                 clear_input_buffer();
                  content_ptr[strcspn(content_ptr, "\n")] = '\0';
                  fprintf(fp , "%s" , content_ptr);
                  free(content_ptr);
               }
-
-
-
-
 
            else
               {
@@ -452,7 +456,7 @@ void move_file(FileManager *fm)
         printf("okay. back to menu...\n");
         return;
     }
-    else if (answer == 'y' && answer == 'Y')
+    else if (answer == 'y' || answer == 'Y')
      {
         printf("enter file name: ");
         fgets(file_name , sizeof(file_name) , stdin);
@@ -494,7 +498,7 @@ void move_file(FileManager *fm)
                  printf("a file with this name already exists in the destination folder. overwrite?[y/n]\n");
                     fgets(fm->buffer , 1024 , stdin);
                     des_answer=fm->buffer[0];
-                    if(des_answer != 'y' || des_answer !='Y')
+                    if(des_answer != 'y' && des_answer !='Y')
                     {
                         printf("move cancelled.\n");
                         return;
