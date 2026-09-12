@@ -1,10 +1,10 @@
 #ifndef FILE_OPERATIONS_H
 #define FILE_OPERATIONS_H
-#include "file_manager.h"
+#include "../build/file_manager.h"
 
-void create_file();
+void create_file(FileManager *fm);
 void read_file();
-void update_file(FileManager *fm);
+void update_file(FileManager *fm)
 void delete_file(FileManager *fm);
 void rename_file(FileManager *fm);
 void copy_file(FileManager *fm);

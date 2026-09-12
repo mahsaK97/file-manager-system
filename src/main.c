@@ -52,7 +52,7 @@ int main()
         switch(option)
     {
         case 1:
-            create_file();
+            create_file(&fm);
                       break;
         case 2:
             delete_file(&fm);

@@ -21,22 +21,17 @@ void create_file(FileManager *fm)
 {
       FILE *fp =NULL;
       char file_name[100];
-      char answer_1;
-      char buffer_1[10];
-      char buffer_2[10];
-      char answer_2;
 
 
       printf("do you want to make a file?[y/n]\n");
-      fgets(buffer_1 , sizeof(buffer_1) , stdin);
+      fgets(fm->buffer , sizeof(fm->buffer) ,stdin);
       clear_input_buffer();
-      answer_1= buffer_1[0];
-      if (answer_1 == 'n' || answer_1 == 'N')
+      if (fm->buffer[0] == 'n' || fm->bufferbuffe[0] == 'N')
       {
           printf("file creation cancelled.\n");
           return;
       }
-      else if (answer_1 == 'y' || answer_1 == 'Y')
+      else if (fm->buffer[0] == 'y' || fm->buffer[0] == 'Y')
       {
           printf("enter file name:\n");
           fgets(file_name , sizeof(file_name) , stdin);
@@ -50,17 +45,23 @@ void create_file(FileManager *fm)
           fp =fopen(file_name , "r");
           if(fp != NULL)
           {
+              fclose(fp);
               printf("THERE IS ALREADY EXIST A FILE WITH THIS NAME.\n DO YOU WANT TO REPLACE IT?[Y/N]\n");
-              if(fm->buffer[0] == 'y' || fm->buffer[0] == 'Y')
-              {
-                  fgets(fm->buffer[0], sizeof())
-              }
-              else if(fm->buffer[0]== 'N' || fm->buffer[0]=='n')
+              fgets(fm->buffer, sizeof(fm->buffer), stdin);
+              clear_input_buffer();
+
+              if(fm->buffer[0]== 'N' || fm->buffer[0]=='n')
               {
                   printf("OKAY.BACKTO MENU...\n");
                   fclose(fp);
                   return;
               }
+              else if(fm->buffer[0] != 'y' || fm->buffer[0]!= 'Y')
+              {
+                  printf("INVALID INPUT.\n");
+                  return;
+              }
+
 
           }
 
@@ -73,16 +74,14 @@ void create_file(FileManager *fm)
 
           printf("file create successfully!\n");
           printf("Do you want to add initial content? (y/n)");
-          fgets(buffer_2 , sizeof(buffer_2), stdin);
+          fgets(fm->buffer, sizeof(fm->buffer), stdin);
           clear_input_buffer();
-          answer_2 = buffer_2[0];
-          if (answer_2 =='n' || answer_2 == 'N')
+          if (fm->buffer[0] =='n' || fm->buffer[0] == 'N')
               {
                   printf("no content added.\n");
-
+                  return;
               }
-          else if(answer_2 == 'y' || answer_2 == 'Y')
-
+          else if(fm->buffer[0] == 'y' || fm->buffer[0] == 'Y')
               {
                  char *content_ptr = malloc(2048 * sizeof (char));
                  if(content_ptr == NULL)
@@ -125,6 +124,7 @@ void read_file()
 
      printf("enter file name:\n");
      fgets(file_name , sizeof(file_name) , stdin);
+     clear_input_buffer();
      file_name[strcspn(file_name , "\n")] = '\0';
      if(file_name[0] == '\0')
         {
@@ -154,6 +154,7 @@ void read_file()
 
      }
 
+     clear_input_buffer();
      printf("\n____END OF FILE____\n");
      fclose(fp);
      free(line_ptr);
@@ -168,6 +169,7 @@ void update_file(FileManager *fm)
 
      printf("enter file name:\n");
      fgets(file_name , sizeof(file_name) , stdin);
+     clear_input_buffer();
      file_name[strcspn(file_name , "\n")] = '\0';
      if(file_name[0] =='\0')
      {
@@ -178,6 +180,7 @@ void update_file(FileManager *fm)
      printf("choose mode : \n1.append \n2.overwrite\n");
      char *endptr;
      fgets(fm->buffer, 1024, stdin);
+     clear_input_buffer();
      if (fm->buffer[0] == '\n' )
      {
          printf("invalid input.\n");
@@ -222,6 +225,7 @@ void update_file(FileManager *fm)
 
      printf("enter new content:\n");
      fgets(new_content, 2048 , stdin);
+     clear_input_buffer();
      new_content[strcspn(new_content , "\n")] = '\0';
      fprintf(fp , "%s" , new_content);
 
@@ -240,6 +244,7 @@ void delete_file(FileManager *fm)
 
      printf("enter file name:");
      fgets(file_name , sizeof(file_name) , stdin);
+     clear_input_buffer();
      file_name[strcspn(file_name , "\n")] = '\0';
      if(file_name[0] =='\0')
      {
@@ -251,14 +256,13 @@ void delete_file(FileManager *fm)
      if(fp == NULL)
      {
          printf("file does not exist.\n");
-
           return;
      }
 
      fclose(fp);
-
      printf("do you want to delete %s ? (y/n)\n" , file_name);
-     fgets(fm -> buffer , 1024 , stdin);
+     fgets(fm->buffer , 1024 , stdin);
+     clear_input_buffer();
      delete_option = fm->buffer[0];
 
      if(delete_option == 'y' || delete_option == 'Y')
@@ -296,6 +300,7 @@ void rename_file(FileManager *fm)
 
     printf("enter the name of the file you want to rename:\n");
     fgets(old_name , sizeof(old_name) , stdin);
+    clear_input_buffer();
     old_name[strcspn(old_name, "\n")] = '\0';
     if(old_name[0] == '\0')
     {
@@ -313,6 +318,7 @@ void rename_file(FileManager *fm)
 
     printf("enter the new name:\n");
     fgets(new_name, sizeof(new_name), stdin);
+    clear_input_buffer();
     new_name[strcspn(new_name,"\n")] = '\0';
     if (new_name[0] == '\0')
     {
@@ -332,11 +338,11 @@ void rename_file(FileManager *fm)
         fclose(file_check);
         printf("a file with this name already exists. overwrite?[y/n]\n");
         fgets(fm -> buffer, 1024 , stdin);
+        clear_input_buffer();
         if(fm->buffer[0] == 'n' || fm->buffer[0] == 'N')
         {
             printf("okay. return to menu...\n");
             return;
-
         }
     }
 
@@ -363,6 +369,7 @@ void copy_file(FileManager *fm)
 
     printf("enter source file name:");
     fgets(source, sizeof(source) , stdin);
+    clear_input_buffer();
     source[strcspn(source, "\n")] ='\0';
     if(source[0] == '\0')
     {
@@ -378,6 +385,7 @@ void copy_file(FileManager *fm)
 
     printf("enter destination file name:");
     fgets(dest, sizeof(dest) , stdin);
+    clear_input_buffer();
     dest[strcspn(dest,"\n")] = '\0';
     if(dest[0] == '\0')
     {
@@ -415,6 +423,7 @@ void copy_file(FileManager *fm)
         fputs(fm->buffer, dst);
     }
 
+        clear_input_buffer();
         printf("file copied successfully!\n");
 
     fclose(src);
@@ -422,15 +431,6 @@ void copy_file(FileManager *fm)
 
 
 }
-
-
-
-
-
-
-
-
-
 
 
 void move_file(FileManager *fm)
@@ -449,6 +449,7 @@ void move_file(FileManager *fm)
         printf("error reading input.\n");
         return;
     }
+    clear_input_buffer();
     answer = fm->buffer[0];
 
     if(answer == 'n' || answer =='N')
@@ -460,6 +461,7 @@ void move_file(FileManager *fm)
      {
         printf("enter file name: ");
         fgets(file_name , sizeof(file_name) , stdin);
+        clear_input_buffer();
         file_name[strcspn(file_name, "\n")] = '\0';
 
         if (file_name[0] == '\0')
@@ -476,6 +478,7 @@ void move_file(FileManager *fm)
         fclose(fp);
             printf("enter the new folder name: ");
             fgets(folder_name , sizeof(folder_name) , stdin);
+            clear_input_buffer();
             folder_name[strcspn(folder_name , "\n")] = '\0';
             if(folder_name[0] == '\0')
             {
@@ -497,6 +500,7 @@ void move_file(FileManager *fm)
                  fclose(des_check);
                  printf("a file with this name already exists in the destination folder. overwrite?[y/n]\n");
                     fgets(fm->buffer , 1024 , stdin);
+                    clear_input_buffer();
                     des_answer=fm->buffer[0];
                     if(des_answer != 'y' && des_answer !='Y')
                     {
@@ -510,7 +514,6 @@ void move_file(FileManager *fm)
                    printf("file moved successfully.\n");
                    return;
               }
-
 
               else
                 {
