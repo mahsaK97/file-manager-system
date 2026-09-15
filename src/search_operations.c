@@ -87,8 +87,8 @@ void search_by_extension(FileManager *fm)
 
 void search_by_name(FileManager *fm)
 {
-    char file_name[100];
-    char folder_name[100];
+    char file_name[250];
+    char folder_name[250];
     int found =0;
     DIR  *dir;
     struct  dirent *entry;
@@ -98,7 +98,7 @@ void search_by_name(FileManager *fm)
     clear_input_buffer();
 
 
-    if(answer == 'n' || answer == 'N')
+    if(fm->buffer[0] == 'n' || fm->buffer[0] == 'N')
        {
            printf("back to menu...\n");
             return;

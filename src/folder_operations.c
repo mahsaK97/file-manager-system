@@ -23,18 +23,17 @@
 void create_folder(FileManager *fm)
 {
 
-    char name_of_folder[100];
-    printf("do you want to make a folder?[y/n]\n");
+    char name_of_folder[250];
 
+    printf("do you want to make a folder?[y/n]\n");
     fgets(fm->buffer , 1024 , stdin);
     clear_input_buffer();
-    char answer = fm->buffer[0];
-    if(answer =='\0')
+    if(fm->buffer[0] =='\0')
     {
         printf("ANSWER CAN'T BE EMPTY.\n");
         return;
     }
-    if(answer == 'y' || answer == 'Y')
+    if(fm->buffer[0] == 'y' || fm->buffer[0] == 'Y')
     {
         printf("enter name of folder:\n");
         fgets(name_of_folder , sizeof(name_of_folder) , stdin);
@@ -65,7 +64,7 @@ void create_folder(FileManager *fm)
     }
 
 
-    else if (answer == 'n' || answer == 'N')
+    else if (fm->buffer[0] == 'n' || fm->buffer[0] == 'N')
     {
         printf("folder creation cancelled.\n");
     }
@@ -88,14 +87,14 @@ void delete_folder(FileManager *fm)
     printf("do you want to delete a folder?[y/n]\n");
     fgets(fm -> buffer , 1024 , stdin);
     clear_input_buffer();
-    char answer = fm->buffer[0];
-    if(answer == 'N' || answer =='n')
+
+    if(fm->buffer[0] == 'N' || fm->buffer[0] =='n')
     {
         printf("folder is not deleted.\n");
         return;
     }
 
-    else if(answer == 'y' || answer == 'Y')
+    else if(fm->buffer[0] == 'y' || fm->buffer[0] == 'Y')
     {
         printf("enter folder name:\n");
         fgets(folder_name , sizeof(folder_name) , stdin);

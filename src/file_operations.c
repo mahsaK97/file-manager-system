@@ -20,7 +20,7 @@
 void create_file(FileManager *fm)
 {
       FILE *fp =NULL;
-      char file_name[100];
+      char file_name[250];
 
 
       printf("do you want to make a file?[y/n]\n");
@@ -119,7 +119,7 @@ void create_file(FileManager *fm)
 
 void read_file()
 {
-     char file_name[100];
+     char file_name[250];
      FILE *fp = NULL;
 
      printf("enter file name:\n");
@@ -164,7 +164,7 @@ void read_file()
 
 void update_file(FileManager *fm)
 {
-     char file_name[100];
+     char file_name[250];
      FILE *fp;
 
      printf("enter file name:\n");
@@ -240,7 +240,7 @@ void update_file(FileManager *fm)
 void delete_file(FileManager *fm)
 {
 
-     char file_name[100];
+     char file_name[250];
 
      printf("enter file name:");
      fgets(file_name , sizeof(file_name) , stdin);
@@ -295,8 +295,8 @@ void delete_file(FileManager *fm)
 
 void rename_file(FileManager *fm)
 {
-    char old_name[200];
-    char new_name[200];
+    char old_name[250];
+    char new_name[250];
 
     printf("enter the name of the file you want to rename:\n");
     fgets(old_name , sizeof(old_name) , stdin);
@@ -363,8 +363,8 @@ void rename_file(FileManager *fm)
 
 void copy_file(FileManager *fm)
 {
-    char dest[200];
-    char source[200];
+    char dest[250];
+    char source[250];
     FILE *dest_ptr;
 
     printf("enter source file name:");
@@ -435,14 +435,12 @@ void copy_file(FileManager *fm)
 
 void move_file(FileManager *fm)
 {
-    char file_name[100];
-    char answer;
+    char file_name[250];
     FILE *fp;
     DIR *dir;
     FILE *des_check;
-    char des_answer;
-    char folder_name[100];
-    char destination[300];
+    char folder_name[250];
+    char destination[250];
     printf("do you want to move a file?[y/n]\n");
     if(fgets(fm->buffer , 1024 , stdin)== NULL)
     {
@@ -450,14 +448,12 @@ void move_file(FileManager *fm)
         return;
     }
     clear_input_buffer();
-    answer = fm->buffer[0];
-
-    if(answer == 'n' || answer =='N')
+    if(fm->buffer[0] == 'n' || fm->buffer[0] =='N')
     {
         printf("okay. back to menu...\n");
         return;
     }
-    else if (answer == 'y' || answer == 'Y')
+    else if (fm->buffer[0]== 'y' || fm->buffer[0] == 'Y')
      {
         printf("enter file name: ");
         fgets(file_name , sizeof(file_name) , stdin);
@@ -473,9 +469,10 @@ void move_file(FileManager *fm)
        if(fp == NULL)
            {
               printf("can not find the file.\n");
+              fclose(fp);
               return;
            }
-        fclose(fp);
+
             printf("enter the new folder name: ");
             fgets(folder_name , sizeof(folder_name) , stdin);
             clear_input_buffer();
@@ -501,8 +498,8 @@ void move_file(FileManager *fm)
                  printf("a file with this name already exists in the destination folder. overwrite?[y/n]\n");
                     fgets(fm->buffer , 1024 , stdin);
                     clear_input_buffer();
-                    des_answer=fm->buffer[0];
-                    if(des_answer != 'y' && des_answer !='Y')
+
+                    if(fm->buffer[0] != 'y' && fm->buffer[0] !='Y')
                     {
                         printf("move cancelled.\n");
                         return;
