@@ -24,9 +24,9 @@ void create_file(FileManager *fm)
 
 
       printf("do you want to make a file?[y/n]\n");
-      fgets(fm->buffer , sizeof(fm->buffer) ,stdin);
+      fgets(fm->buffer , 1024 ,stdin);
       clear_input_buffer();
-      if (fm->buffer[0] == 'n' || fm->bufferbuffe[0] == 'N')
+      if (fm->buffer[0] == 'n' || fm->buffer[0] == 'N')
       {
           printf("file creation cancelled.\n");
           return;
@@ -47,7 +47,7 @@ void create_file(FileManager *fm)
           {
               fclose(fp);
               printf("THERE IS ALREADY EXIST A FILE WITH THIS NAME.\n DO YOU WANT TO REPLACE IT?[Y/N]\n");
-              fgets(fm->buffer, sizeof(fm->buffer), stdin);
+              fgets(fm->buffer, 1024, stdin);
               clear_input_buffer();
 
               if(fm->buffer[0]== 'N' || fm->buffer[0]=='n')
@@ -74,7 +74,7 @@ void create_file(FileManager *fm)
 
           printf("file create successfully!\n");
           printf("Do you want to add initial content? (y/n)");
-          fgets(fm->buffer, sizeof(fm->buffer), stdin);
+          fgets(fm->buffer, 1024, stdin);
           clear_input_buffer();
           if (fm->buffer[0] =='n' || fm->buffer[0] == 'N')
               {
