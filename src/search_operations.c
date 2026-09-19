@@ -92,6 +92,7 @@ void search_by_name(FileManager *fm)
     int found =0;
     DIR  *dir;
     struct  dirent *entry;
+    struct  stat file_info;
 
     printf("do you want to search a file in a folder?[y/n]");
     fgets(fm->buffer, 1024 , stdin);
@@ -282,7 +283,7 @@ void search_recursive(const char *current_path , const char *file_name)
         {
             char new_path[1024];
 
-            snprintf(
+            int result = snprintf(
                     new_path,
                     sizeof(new_path),
                     "%s/%s",
@@ -291,6 +292,17 @@ void search_recursive(const char *current_path , const char *file_name)
                     );
 
 
+            if(result < 0)
+            {
+                printf("ERROR CREATING PATH.\n");
+                return;
+            }
+
+            if(size_t(result) >= sizeof(new_path))
+            {
+                printf("PAATH IS TOO LONG.\n");
+                return;
+            }
             search_recursive(new_path,file_name);
         }
 
