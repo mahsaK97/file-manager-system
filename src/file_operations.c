@@ -52,17 +52,14 @@ void create_file(FileManager *fm)
 
               if(fm->buffer[0]== 'N' || fm->buffer[0]=='n')
               {
-                  printf("OKAY.BACKTO MENU...\n");
-                  fclose(fp);
+                  printf("OKAY.BACK TO MENU...\n");
                   return;
               }
-              else if(fm->buffer[0] != 'y' || fm->buffer[0]!= 'Y')
+              else if(fm->buffer[0] != 'y' && fm->buffer[0]!= 'Y')
               {
                   printf("INVALID INPUT.\n");
                   return;
               }
-
-
           }
 
           fp = fopen(file_name , "w");
@@ -70,7 +67,7 @@ void create_file(FileManager *fm)
                  {
                   printf("error file creating.\n");
                    return;
-                  }
+                 }
 
           printf("file create successfully!\n");
           printf("Do you want to add initial content? (y/n)");
@@ -79,6 +76,7 @@ void create_file(FileManager *fm)
           if (fm->buffer[0] =='n' || fm->buffer[0] == 'N')
               {
                   printf("no content added.\n");
+                  fclose(fp);
                   return;
               }
           else if(fm->buffer[0] == 'y' || fm->buffer[0] == 'Y')
@@ -153,8 +151,6 @@ void read_file()
          printf("%s" , line_ptr);
 
      }
-
-     clear_input_buffer();
      printf("\n____END OF FILE____\n");
      fclose(fp);
      free(line_ptr);
@@ -177,6 +173,15 @@ void update_file(FileManager *fm)
          return;
      }
 
+     FILE *file_check = fopen(file_name, "r");
+
+     if(file_check == NULL)
+     {
+         printf("FILE does NOT EXIST.\n");
+         return;
+     }
+
+     fclose(file_check);
      printf("choose mode : \n1.append \n2.overwrite\n");
      char *endptr;
      fgets(fm->buffer, 1024, stdin);
@@ -336,7 +341,7 @@ void rename_file(FileManager *fm)
     if(file_check != NULL)
     {
         fclose(file_check);
-        printf("a file with this name already exists. overwrite?[y/n]\n");
+        printf("a file with this name already exist. overwrite?[y/n]\n");
         fgets(fm -> buffer, 1024 , stdin);
         clear_input_buffer();
         if(fm->buffer[0] == 'n' || fm->buffer[0] == 'N')
@@ -344,7 +349,15 @@ void rename_file(FileManager *fm)
             printf("okay. return to menu...\n");
             return;
         }
-    }
+
+
+        if(fm->buffer[0] != 'y' && fm->buffer[0] != 'Y')
+        {
+            printf("INVALID INPUT.\n");
+            return;
+        }
+
+        }
 
     if(rename(old_name, new_name)== 0)
     {
@@ -355,8 +368,6 @@ void rename_file(FileManager *fm)
     {
         perror("rename failed.");
     }
-
-
 }
 
 
@@ -469,9 +480,10 @@ void move_file(FileManager *fm)
        if(fp == NULL)
            {
               printf("can not find the file.\n");
-              fclose(fp);
               return;
            }
+
+           fclose(fp);
 
             printf("enter the new folder name: ");
             fgets(folder_name , sizeof(folder_name) , stdin);
@@ -490,7 +502,17 @@ void move_file(FileManager *fm)
             }
 
         closedir(dir);
-        snprintf(destination,sizeof(destination), "%s%s%s" ,folder_name, PATH_SEPARATOR,  file_name);
+        int result = snprintf(destination,
+                              sizeof(destination),
+                              "%s%s%s" ,folder_name,
+                              PATH_SEPARATOR,
+                              file_name);
+
+                if (result < 0 || result >= sizeof(destination))
+                {
+                    printf("Destination path is too long.\n");
+                    return;
+                }
              des_check =fopen(destination , "r");
              if(des_check != NULL)
              {
@@ -501,7 +523,7 @@ void move_file(FileManager *fm)
 
                     if(fm->buffer[0] != 'y' && fm->buffer[0] !='Y')
                     {
-                        printf("move cancelled.\n");
+                        printf("INVALID INPUT.\n");
                         return;
                     }
              }
@@ -525,12 +547,3 @@ void move_file(FileManager *fm)
     }
 
 }
-
-
-
-
-
-
-
-
-
