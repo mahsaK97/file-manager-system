@@ -47,7 +47,7 @@ void create_folder(FileManager *fm)
         DIR *dir = opendir(name_of_folder);
         if(dir != NULL)
         {
-            printf("THERE IS A FOLDER WITH THIS NAME ALREDY.\n");
+            printf("THERE IS A FOLDER WITH THIS NAME ALREADY.\n");
             closedir(dir);
             return;
         }
@@ -115,7 +115,7 @@ void delete_folder(FileManager *fm)
 
         closedir(dir);
 
-        else if(RMDIR(folder_name) == 0)
+        if(RMDIR(folder_name) == 0)
         {
             printf("folder deleted successfully.\n");
             return;
@@ -147,12 +147,12 @@ void file_list_in_folder(FileManager *fm)
     printf("Do you want to see a list of a folder?[y/n]\n");
     fgets(fm ->buffer , 1024 , stdin);
     clear_input_buffer();
-    if(fm->buffer == 'N' || fm->buffer == 'n')
+    if(fm->buffer[0] == 'N' || fm->buffer[0] == 'n')
     {
         printf("okay. back to menu...\n");
         return;
     }
-    else if(fm->buffer == 'y' || fm->buffer =='Y')
+    else if(fm->buffer[0] == 'y' || fm->buffer[0] =='Y')
     {
         printf("enter folder name: ");
         fgets(folder_name , sizeof(folder_name) , stdin);
@@ -175,6 +175,13 @@ void file_list_in_folder(FileManager *fm)
         while((entry = readdir(dir)) != NULL)
         {
 
+            if(strcmp(entry->d_name, ".") == 0)
+            || (strcmp(entry ->d_name, "..")==0)
+            {
+                continue;
+            }
+
+
             printf("%s\n" ,entry->d_name);
         }
 
@@ -187,15 +194,3 @@ void file_list_in_folder(FileManager *fm)
         return;
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
