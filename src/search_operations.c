@@ -19,17 +19,13 @@ void search_by_extension(FileManager *fm)
     printf("do you want to search by extension?[y/n]\n");
     fgets(fm->buffer, 1024, stdin);
     clear_input_buffer();
-    if(fm->buffer =='n' || fm->buffer == 'N')
+    if(fm->buffer[0] =='n' || fm->buffer[0] == 'N')
     {
         printf("okay. back to menu...\n");
         return;
     }
-    else if (fm->buffer =='\0')
-    {
-        printf("input can't be empty.\n");
-        return;
-    }
-    else if (fm->buffer == 'y' || fm->buffer =='Y')
+
+    else if (fm->buffer[0] == 'y' || fm->buffer[0] =='Y')
     {
         printf("enter extension (.example):");
         fgets(extension, sizeof(extension) , stdin);
@@ -58,8 +54,12 @@ void search_by_extension(FileManager *fm)
             printf("folder not found.\n");
             return;
         }
-        while((entry = readdir(dir)) != NULL (entry->d_type != DT_DIR))
+        while((entry = readdir(dir)) != NULL)
         {
+            if(entry->d_type == DT_DIR)
+            {
+                continue;
+            }
 
             char *dot = strrchr(entry->d_name, '.');
             if(dot != NULL)
@@ -92,7 +92,6 @@ void search_by_name(FileManager *fm)
     int found =0;
     DIR  *dir;
     struct  dirent *entry;
-    struct  stat file_info;
 
     printf("do you want to search a file in a folder?[y/n]");
     fgets(fm->buffer, 1024 , stdin);
@@ -105,7 +104,7 @@ void search_by_name(FileManager *fm)
             return;
        }
 
-    else if (fm->buffer== 'y' || fm->buffer == 'Y')
+    else if (fm->buffer[0] == 'y' || fm->buffer[0] == 'Y')
     {
         printf("enter folder name: ");
         fgets(folder_name, sizeof(folder_name) ,stdin);
@@ -138,7 +137,8 @@ void search_by_name(FileManager *fm)
             }
                 while((entry = readdir(dir)) != NULL)
                 {
-                    if((strcmp(file_name , entry->d_name)== 0) && entry->d_type != DT_type)
+                    if((strcmp(file_name , entry->d_name)== 0) &&
+                       entry->d_type != DT_DIR)
                     {
                         found = 1;
                          break;
@@ -166,7 +166,7 @@ void search_by_name(FileManager *fm)
 
 
 
-void search_by_size(FileManager *fm, FileManager *current_path)
+void search_by_size(FileManager *fm)
 {
     char size_in_str[50];
     char *endptr;
@@ -175,18 +175,20 @@ void search_by_size(FileManager *fm, FileManager *current_path)
     struct dirent *entry;
     char folder_name[250];
     int found =0;
+    char path[1024];
+
 
 
 
     printf("DO YOU WANT TO SEARCH BY SIZE?[y/n]\n");
     fgets(fm->buffer , 1024 , stdin);
     clear_input_buffer();
-    if(fm->buffer =='n' || fm->buffer=='N')
+    if(fm->buffer[0] =='n' || fm->buffer[0] == 'N')
     {
         printf("okay.back to menu...\n");
         return;
     }
-    if(answer=='y' || answer=='Y')
+    if(fm->buffer[0] == 'y' || fm->buffer[0] == 'Y')
     {
         printf("FOLDER NAME: ");
         fgets(folder_name, sizeof(folder_name), stdin);
@@ -213,7 +215,15 @@ void search_by_size(FileManager *fm, FileManager *current_path)
             closedir(dir);
             return;
         }
-        snprintf(
+
+        while((entry = readdir(dir))!= NULL)
+        {
+            if(entry->d_type == DT_DIR)
+            {
+                continue;
+            }
+
+            snprintf(
                  path,
                  sizeof(path),
                  "%s/%s",
@@ -221,19 +231,20 @@ void search_by_size(FileManager *fm, FileManager *current_path)
                  entry->d_name
                  );
 
-        stat(path,&file_info);
+           if(stat(path, &file_info) == 0)
 
-        while((entry = readdir(dir))!= NULL)
-        {
-
-            if(stat(entry->d_name , &file_info)==0)
                {
                     if(file_info.st_size == long_size)
                     {
-                        printf("file name : %s\n file size: %ld\n",entry->d_name,file_info.st_size);
+                        printf("file name : %s\n file size: %ld\n",
+                               entry->d_name,
+                               file_info.st_size
+                               );
+
                         found=1;
                     }
                }
+
         }
 
         closedir(dir);
@@ -244,10 +255,6 @@ void search_by_size(FileManager *fm, FileManager *current_path)
         printf("no file with this size was found.\n");
     }
 
-    else
-    {
-        printf("INVALID INPUT.\n");
-    }
 
 }
 
@@ -274,7 +281,8 @@ void search_recursive(const char *current_path , const char *file_name)
             continue;
         }
 
-        if(strcmp(entry->d_name,file_name)==0)
+        if(entry->d_type != DT_DIR &&
+           strcmp(entry->d_name,file_name)==0)
         {
             printf("file found : %s/%s\n",current_path, entry->d_name);
         }
@@ -295,12 +303,14 @@ void search_recursive(const char *current_path , const char *file_name)
             if(result < 0)
             {
                 printf("ERROR CREATING PATH.\n");
+                closedir(dir);
                 return;
             }
 
-            if(size_t(result) >= sizeof(new_path))
+            if(result >= sizeof(new_path))
             {
                 printf("PAATH IS TOO LONG.\n");
+                closedir(dir);
                 return;
             }
             search_recursive(new_path,file_name);
@@ -319,7 +329,7 @@ void search(FileManager *fm)
     printf("DO YOU WANT SEARCH WITH RECURSIVE?\n");
     fgets(fm->buffer, 1024, stdin);
     clear_input_buffer();
-    if(fm->buffer[0] == 'n' || fm->buffer[0== 'N')
+    if(fm->buffer[0] == 'n' || fm->buffer[0] == 'N')
     {
         printf("OKAY.BACK TO MENU....\n");
         return;
@@ -329,12 +339,12 @@ void search(FileManager *fm)
         printf("FILE NAME: ");
         fgets(file_name, sizeof(file_name) , stdin);
         clear_input_buffer();
+        file_name[strcspn(file_name,"\n")]='\0';
         if(file_name[0] == '\0')
         {
             printf("FILE NAME CAN'T BE EMPTY.\n");
             return;
         }
-        file_name[strcspn(file_name, "\n")] = '\0';
 
         search_recursive(fm->current_path, file_name);
 
@@ -371,22 +381,22 @@ void search_menu(FileManager *fm)
     switch(option)
     {
     case 1:
-        search_by_name(&fm);
+        search_by_name(fm);
         break;
 
 
     case 2:
-        search_by_extension(&fm);
+        search_by_extension(fm);
         break;
 
 
     case 3:
-        search_by_size(&fm);
+        search_by_size(fm);
         break;
 
 
     case 4:
-        search(&fm);
+        search(fm);
         break;
 
 
