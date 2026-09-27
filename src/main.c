@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include "../include/file_operations.h"
 #include "../include/folder_operations.h"
-#include "../build/search_operation.h"
-#include "../build/file_manager.h"
+#include "../include/search_operations.h"
+#include "../include/file_manager.h"
 
 
 int main()

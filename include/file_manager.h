@@ -4,7 +4,7 @@
 
 typedef struct
 {
-    char current_path[1024];
+    char *current_path;
     char *buffer;
 
 

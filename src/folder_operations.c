@@ -175,8 +175,8 @@ void file_list_in_folder(FileManager *fm)
         while((entry = readdir(dir)) != NULL)
         {
 
-            if(strcmp(entry->d_name, ".") == 0)
-            || (strcmp(entry ->d_name, "..")==0)
+            if((strcmp(entry->d_name, ".") == 0)
+            || (strcmp(entry ->d_name, "..")==0))
             {
                 continue;
             }
