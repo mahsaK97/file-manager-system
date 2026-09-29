@@ -27,7 +27,10 @@ void create_folder(FileManager *fm)
 
     printf("do you want to make a folder?[y/n]\n");
     fgets(fm->buffer , 1024 , stdin);
-    clear_input_buffer();
+    if(strchr(fm->buffer, '\n') == NULL)
+    {
+        clear_input_buffer();
+    }
     if(fm->buffer[0] =='\0')
     {
         printf("ANSWER CAN'T BE EMPTY.\n");
@@ -37,7 +40,10 @@ void create_folder(FileManager *fm)
     {
         printf("enter name of folder:\n");
         fgets(name_of_folder , sizeof(name_of_folder) , stdin);
-        clear_input_buffer();
+        if(strchr(fm->buffer, '\n') == NULL)
+        {
+            clear_input_buffer();
+        }
         name_of_folder[strcspn(name_of_folder , "\n")] = '\0';
         if(name_of_folder[0] =='\0')
         {
@@ -60,10 +66,7 @@ void create_folder(FileManager *fm)
         {
             perror("mkdir failed");
         }
-
     }
-
-
     else if (fm->buffer[0] == 'n' || fm->buffer[0] == 'N')
     {
         printf("folder creation cancelled.\n");
@@ -85,9 +88,11 @@ void delete_folder(FileManager *fm)
     char folder_name[250];
 
     printf("do you want to delete a folder?[y/n]\n");
-    fgets(fm -> buffer , 1024 , stdin);
-    clear_input_buffer();
-
+    fgets(fm->buffer , 1024 , stdin);
+    if(strchr(fm->buffer, '\n')== NULL)
+    {
+        clear_input_buffer();
+    }
     if(fm->buffer[0] == 'N' || fm->buffer[0] =='n')
     {
         printf("folder is not deleted.\n");
@@ -98,7 +103,10 @@ void delete_folder(FileManager *fm)
     {
         printf("enter folder name:\n");
         fgets(folder_name , sizeof(folder_name) , stdin);
-        clear_input_buffer();
+        if(strchr(fm->buffer,'\n')==NULL)
+        {
+            clear_input_buffer();
+        }
         folder_name[strcspn(folder_name , "\n")] = '\0';
         if(folder_name[0] == '\0')
         {
@@ -146,7 +154,10 @@ void file_list_in_folder(FileManager *fm)
 
     printf("Do you want to see a list of a folder?[y/n]\n");
     fgets(fm ->buffer , 1024 , stdin);
-    clear_input_buffer();
+    if(strchr(fm->buffer, '\n')==NULL)
+    {
+        clear_input_buffer();
+    }
     if(fm->buffer[0] == 'N' || fm->buffer[0] == 'n')
     {
         printf("okay. back to menu...\n");
@@ -156,7 +167,10 @@ void file_list_in_folder(FileManager *fm)
     {
         printf("enter folder name: ");
         fgets(folder_name , sizeof(folder_name) , stdin);
-        clear_input_buffer();
+        if(strchr(fm->buffer, '\n')==NULL)
+        {
+            clear_input_buffer();
+        }
         folder_name[strcspn(folder_name,"\n")] = '\0';
         if(folder_name[0] == '\0')
         {

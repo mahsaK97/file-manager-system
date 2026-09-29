@@ -18,7 +18,10 @@ void search_by_extension(FileManager *fm)
 
     printf("do you want to search by extension?[y/n]\n");
     fgets(fm->buffer, 1024, stdin);
-    clear_input_buffer();
+    if(strchr(fm->buffer,'\n') == NULL)
+    {
+        clear_input_buffer();
+    }
     if(fm->buffer[0] =='n' || fm->buffer[0] == 'N')
     {
         printf("okay. back to menu...\n");
@@ -29,7 +32,10 @@ void search_by_extension(FileManager *fm)
     {
         printf("enter extension (.example):");
         fgets(extension, sizeof(extension) , stdin);
-        clear_input_buffer();
+        if(strchr(fm->buffer, '\n')==NULL)
+        {
+            clear_input_buffer();
+        }
         extension[strcspn(extension, "\n")] ='\0';
         if(extension[0] == '\0')
         {
@@ -39,7 +45,10 @@ void search_by_extension(FileManager *fm)
 
         printf("enter folder name:");
         fgets(folder_name , sizeof(folder_name) , stdin);
-        clear_input_buffer();
+        if(strchr(fm->buffer,'\n') == NULL)
+        {
+            clear_input_buffer();
+        }
         folder_name[strcspn(folder_name , "\n")] = '\0';
         if(folder_name[0]== '\0')
         {
@@ -95,9 +104,10 @@ void search_by_name(FileManager *fm)
 
     printf("do you want to search a file in a folder?[y/n]");
     fgets(fm->buffer, 1024 , stdin);
-    clear_input_buffer();
-
-
+    if(strchr(fm->buffer,'\n') == NULL)
+    {
+        clear_input_buffer();
+    }
     if(fm->buffer[0] == 'n' || fm->buffer[0] == 'N')
        {
            printf("back to menu...\n");
@@ -108,7 +118,10 @@ void search_by_name(FileManager *fm)
     {
         printf("enter folder name: ");
         fgets(folder_name, sizeof(folder_name) ,stdin);
-        clear_input_buffer();
+        if(fm->buffer, '\n')== NULL)
+        {
+            clear_input_buffer();
+        }
         folder_name[strcspn(folder_name, "\n")] = '\0';
         if(folder_name[0] == '\0')
         {
@@ -127,7 +140,10 @@ void search_by_name(FileManager *fm)
 
             printf("enter file name: ");
             fgets(file_name, sizeof(file_name) , stdin);
-            clear_input_buffer();
+            if(strchr(fm->buffer,'\n')== NULL)
+            {
+                clear_input_buffer();
+            }
             file_name[strcspn(file_name, "\n")]= '\0';
             if(file_name[0]== '\0')
             {
@@ -182,7 +198,10 @@ void search_by_size(FileManager *fm)
 
     printf("DO YOU WANT TO SEARCH BY SIZE?[y/n]\n");
     fgets(fm->buffer , 1024 , stdin);
-    clear_input_buffer();
+    if(strchr(fm->buffer, '\n') == NULL)
+    {
+        clear_input_buffer();
+    }
     if(fm->buffer[0] =='n' || fm->buffer[0] == 'N')
     {
         printf("okay.back to menu...\n");
@@ -192,7 +211,10 @@ void search_by_size(FileManager *fm)
     {
         printf("FOLDER NAME: ");
         fgets(folder_name, sizeof(folder_name), stdin);
-        clear_input_buffer();
+        if(strchr(fm->buffer, '\n') == NULL)
+        {
+            clear_input_buffer();
+        }
         folder_name[strcspn(folder_name,"\n")] ='\0';
         if(folder_name[0] == '\0')
         {
@@ -207,7 +229,10 @@ void search_by_size(FileManager *fm)
         }
         printf("ENTER SIZE: ");
         fgets(size_in_str, sizeof(size_in_str), stdin);
-        clear_input_buffer();
+        if(strchr(fm->buffer, '\n')== NULL)
+        {
+            clear_input_buffer();
+        }
         long long_size=strtol(size_in_str,&endptr, 10);
         if(size_in_str == endptr||(*endptr != '\n' && *endptr !='\0'))
         {
@@ -328,7 +353,10 @@ void search(FileManager *fm)
 
     printf("DO YOU WANT SEARCH WITH RECURSIVE?\n");
     fgets(fm->buffer, 1024, stdin);
-    clear_input_buffer();
+    if(strchr(fm->buffer, '\n') == NULL)
+    {
+        clear_input_buffer();
+    }
     if(fm->buffer[0] == 'n' || fm->buffer[0] == 'N')
     {
         printf("OKAY.BACK TO MENU....\n");
@@ -338,7 +366,10 @@ void search(FileManager *fm)
     {
         printf("FILE NAME: ");
         fgets(file_name, sizeof(file_name) , stdin);
-        clear_input_buffer();
+        if(strchr(fm->buffer, '\n')== NULL)
+        {
+            clear_input_buffer();
+        }
         file_name[strcspn(file_name,"\n")]='\0';
         if(file_name[0] == '\0')
         {
@@ -369,9 +400,12 @@ void search_menu(FileManager *fm)
     printf("4.search with recursive\n");
 
     fgets(fm ->buffer, 1024 , stdin);
-    clear_input_buffer();
-    option = strtol(fm ->buffer , &endptr , 10);
+    if(strchr(fm->buffer, '\n')== NULL)
+    {
+        clear_input_buffer();
+    }
 
+    option = strtol(fm ->buffer , &endptr , 10);
     if(endptr == fm->buffer || (*endptr != '\0' && *endptr != '\n'))
     {
         printf("invalid input.\n");
