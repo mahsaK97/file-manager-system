@@ -40,7 +40,7 @@ void create_folder(FileManager *fm)
     {
         printf("enter name of folder:\n");
         fgets(name_of_folder , sizeof(name_of_folder) , stdin);
-        if(strchr(fm->buffer, '\n') == NULL)
+        if(strchr(name_of_folder, '\n') == NULL)
         {
             clear_input_buffer();
         }
@@ -79,10 +79,6 @@ void create_folder(FileManager *fm)
 
 }
 
-
-
-
-
 void delete_folder(FileManager *fm)
 {
     char folder_name[250];
@@ -103,7 +99,7 @@ void delete_folder(FileManager *fm)
     {
         printf("enter folder name:\n");
         fgets(folder_name , sizeof(folder_name) , stdin);
-        if(strchr(fm->buffer,'\n')==NULL)
+        if(strchr(folder_name,'\n')==NULL)
         {
             clear_input_buffer();
         }
@@ -167,7 +163,7 @@ void file_list_in_folder(FileManager *fm)
     {
         printf("enter folder name: ");
         fgets(folder_name , sizeof(folder_name) , stdin);
-        if(strchr(fm->buffer, '\n')==NULL)
+        if(strchr(folder_name, '\n')==NULL)
         {
             clear_input_buffer();
         }

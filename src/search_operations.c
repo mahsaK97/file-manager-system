@@ -32,7 +32,7 @@ void search_by_extension(FileManager *fm)
     {
         printf("enter extension (.example):");
         fgets(extension, sizeof(extension) , stdin);
-        if(strchr(fm->buffer, '\n')==NULL)
+        if(strchr(extension, '\n')==NULL)
         {
             clear_input_buffer();
         }
@@ -45,7 +45,7 @@ void search_by_extension(FileManager *fm)
 
         printf("enter folder name:");
         fgets(folder_name , sizeof(folder_name) , stdin);
-        if(strchr(fm->buffer,'\n') == NULL)
+        if(strchr(folder_name,'\n') == NULL)
         {
             clear_input_buffer();
         }
@@ -118,7 +118,7 @@ void search_by_name(FileManager *fm)
     {
         printf("enter folder name: ");
         fgets(folder_name, sizeof(folder_name) ,stdin);
-        if(fm->buffer, '\n')== NULL)
+        if(folder_name, '\n')== NULL)
         {
             clear_input_buffer();
         }
@@ -135,12 +135,10 @@ void search_by_name(FileManager *fm)
             {
                 printf("folder can't be found.\n");
                 return;
-
             }
-
             printf("enter file name: ");
             fgets(file_name, sizeof(file_name) , stdin);
-            if(strchr(fm->buffer,'\n')== NULL)
+            if(strchr(file_name,'\n')== NULL)
             {
                 clear_input_buffer();
             }
@@ -211,7 +209,7 @@ void search_by_size(FileManager *fm)
     {
         printf("FOLDER NAME: ");
         fgets(folder_name, sizeof(folder_name), stdin);
-        if(strchr(fm->buffer, '\n') == NULL)
+        if(strchr(folder_name, '\n') == NULL)
         {
             clear_input_buffer();
         }
@@ -229,7 +227,7 @@ void search_by_size(FileManager *fm)
         }
         printf("ENTER SIZE: ");
         fgets(size_in_str, sizeof(size_in_str), stdin);
-        if(strchr(fm->buffer, '\n')== NULL)
+        if(strchr(size_in_str, '\n')== NULL)
         {
             clear_input_buffer();
         }
@@ -366,7 +364,7 @@ void search(FileManager *fm)
     {
         printf("FILE NAME: ");
         fgets(file_name, sizeof(file_name) , stdin);
-        if(strchr(fm->buffer, '\n')== NULL)
+        if(strchr(file_name, '\n')== NULL)
         {
             clear_input_buffer();
         }
