@@ -5,12 +5,15 @@
 #include "../include/search_operations.h"
 #include "../include/file_manager.h"
 
+#include <unistd.h>
+
 
 int main()
 {
 
     FileManager fm;
     fm.buffer = malloc(1024 *sizeof(char));
+    fm.current_path = malloc(2048 *sizeof(char));
     if(fm.buffer == NULL)
     {
          printf("Memory allocation failed.\n");
@@ -18,9 +21,7 @@ int main()
     }
     if(fm.current_path == NULL)
     {
-
-         printf("Memory allocation failed.\n");
-         return 1;
+        getcwd(fm.current_path,2048);
     }
     long option;
     do

@@ -118,7 +118,7 @@ void search_by_name(FileManager *fm)
     {
         printf("enter folder name: ");
         fgets(folder_name, sizeof(folder_name) ,stdin);
-        if(folder_name, '\n')== NULL)
+        if(strchr(folder_name, '\n')== NULL)
         {
             clear_input_buffer();
         }
