@@ -11,7 +11,6 @@ int main()
 
     FileManager fm;
     fm.buffer = malloc(1024 *sizeof(char));
-    fm.current_path = malloc(2048 *sizeof(char));
     if(fm.buffer == NULL)
     {
          printf("Memory allocation failed.\n");
