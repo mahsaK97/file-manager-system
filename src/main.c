@@ -21,8 +21,10 @@ int main()
     }
     if(fm.current_path == NULL)
     {
-        getcwd(fm.current_path,2048);
+        printf("Memory allocation failed.\n");
+        return 1;
     }
+    getcwd(fm.current_path,2048);
     long option;
     do
     { printf("enter the number of option you want to do:\n");
