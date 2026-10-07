@@ -7,24 +7,35 @@
 
 #include <unistd.h>
 
+#include <errno.h>
 
 int main()
 {
 
     FileManager fm;
     fm.buffer = malloc(1024 *sizeof(char));
-    fm.current_path = malloc(2048 *sizeof(char));
     if(fm.buffer == NULL)
     {
-         printf("Memory allocation failed.\n");
+         perror("malloc buffer");
          return 1;
     }
+    fm.current_path = malloc(2048 *sizeof(char));
+
     if(fm.current_path == NULL)
     {
-        printf("Memory allocation failed.\n");
+        perror("malloc current_path");
+        free(fm.buffer);
         return 1;
     }
-    getcwd(fm.current_path,2048);
+
+    if(getcwd(fm.current_path,2048)==NULL)
+    {
+        perror("getcwd");
+        free(fm.buffer);
+        free(fm.current_path);
+        return 1;
+    }
+
     long option;
     do
     { printf("enter the number of option you want to do:\n");
@@ -42,7 +53,17 @@ int main()
         printf("12.Exit\n");
 
         char buffer[10];
-        fgets(buffer, sizeof(buffer) , stdin);
+
+        if(fgets(buffer, sizeof(buffer) , stdin)==NULL)
+        {
+            if(feof(stdin))
+            {
+                break;
+            }
+
+            perror("fgets");
+            break;
+        }
         char *endptr;
         option =strtol(buffer , &endptr , 10);
         if (buffer == endptr || ( *endptr != '\n' && *endptr != '\0'))

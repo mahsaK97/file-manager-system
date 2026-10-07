@@ -481,10 +481,6 @@ void copy_file(FileManager *fm)
         fputs(fm->buffer, dst);
     }
 
-        if(strchr(fm->buffer, '\n') == NULL)
-        {
-            clear_input_buffer();
-        }
         printf("file copied successfully!\n");
 
     fclose(src);
