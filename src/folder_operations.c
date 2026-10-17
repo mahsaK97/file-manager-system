@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <dirent.h>
 #include <string.h>
-
+#include <errno.h>
 
 #include "../include/file_operations.h"
 #include "../include/input_utls.h"
@@ -28,7 +28,7 @@ void create_folder(FileManager *fm)
     printf("do you want to make a folder?[y/n]\n");
     if(fgets(fm->buffer , 1024 , stdin) == NULL)
     {
-        fprintf(stdrr, "FAILED TO READ INPUT.\n");
+        fprintf(stderr, "FAILED TO READ INPUT.\n");
         return;
     }
     if(strchr(fm->buffer, '\n') == NULL)
@@ -43,7 +43,11 @@ void create_folder(FileManager *fm)
     if(fm->buffer[0] == 'y' || fm->buffer[0] == 'Y')
     {
         printf("enter name of folder:\n");
-        fgets(name_of_folder , sizeof(name_of_folder) , stdin);
+        if(fgets(name_of_folder , sizeof(name_of_folder) , stdin) == NULL)
+        {
+             fprintf(stderr, "FAILED TO READ INPUT.\n");
+             return;
+        }
         if(strchr(name_of_folder, '\n') == NULL)
         {
             clear_input_buffer();
@@ -58,7 +62,11 @@ void create_folder(FileManager *fm)
         if(dir != NULL)
         {
             printf("THERE IS A FOLDER WITH THIS NAME ALREADY.\n");
-            closedir(dir);
+            if(closedir(dir) = -1)
+            {
+                perror("closedir failde");
+            }
+
             return;
         }
         if(MKDIR(name_of_folder) == 0)
@@ -90,7 +98,7 @@ void delete_folder(FileManager *fm)
     printf("do you want to delete a folder?[y/n]\n");
     if(fgets(fm->buffer , 1024 , stdin)== NULL)
     {
-        fprintf(stdrr, "FAILED TO READ INPUT.\n");
+        fprintf(stderr, "FAILED TO READ INPUT.\n");
         return;
     }
     if(strchr(fm->buffer, '\n')== NULL)
@@ -106,7 +114,11 @@ void delete_folder(FileManager *fm)
     else if(fm->buffer[0] == 'y' || fm->buffer[0] == 'Y')
     {
         printf("enter folder name:\n");
-        fgets(folder_name , sizeof(folder_name) , stdin);
+        if(fgets(folder_name , sizeof(folder_name) , stdin) == NULL)
+        {
+             fprintf(stderr, "FAILED TO READ INPUT.\n");
+             return;
+        }
         if(strchr(folder_name,'\n')==NULL)
         {
             clear_input_buffer();
@@ -158,7 +170,7 @@ void file_list_in_folder(FileManager *fm)
     printf("Do you want to see a list of a folder?[y/n]\n");
     if(fgets(fm ->buffer , 1024 , stdin) == NULL)
     {
-        fprintf(stdrr, "FAILED TO READ INPUT.\n");
+        fprintf(stderr, "FAILED TO READ INPUT.\n");
         return;
     }
     if(strchr(fm->buffer, '\n')==NULL)
@@ -173,7 +185,11 @@ void file_list_in_folder(FileManager *fm)
     else if(fm->buffer[0] == 'y' || fm->buffer[0] =='Y')
     {
         printf("enter folder name: ");
-        fgets(folder_name , sizeof(folder_name) , stdin);
+        if(fgets(folder_name , sizeof(folder_name) , stdin) ==NULL)
+        {
+             fprintf(stderr, "FAILED TO READ INPUT.\n");
+             return;
+        }
         if(strchr(folder_name, '\n')==NULL)
         {
             clear_input_buffer();
