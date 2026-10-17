@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <dirent.h>
-
+#include <error.h>
 
 #include "../include/file_operations.h"
 #include "../include/input_utls.h"
@@ -37,7 +37,19 @@ void create_file(FileManager *fm)
       else if (fm->buffer[0] == 'y' || fm->buffer[0] == 'Y')
       {
           printf("enter file name:\n");
-          fgets(file_name , sizeof(file_name) , stdin);
+          if(fgets(file_name , sizeof(file_name) , stdin)==NULL)
+          {
+              if(feof(stdin))
+              {
+                  printf("END OF FILE.\n");
+              }
+              else
+              {
+                  perror("fegts");
+
+              }
+              return;
+          }
           if(strchr(fm->buffer,'\n')== NULL)
           {
               clear_input_buffer();

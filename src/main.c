@@ -64,8 +64,18 @@ int main()
             perror("fgets");
             break;
         }
+        errno =0;
+
         char *endptr;
         option =strtol(buffer , &endptr , 10);
+
+        if(errno == ERANGE)
+        {
+            printf("NUMBER IS OUT OF RANGE.\n");
+            continue;
+        }
+
+
         if (buffer == endptr || ( *endptr != '\n' && *endptr != '\0'))
         {
             printf("invalid input.\n");

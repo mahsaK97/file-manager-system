@@ -26,7 +26,11 @@ void create_folder(FileManager *fm)
     char name_of_folder[250];
 
     printf("do you want to make a folder?[y/n]\n");
-    fgets(fm->buffer , 1024 , stdin);
+    if(fgets(fm->buffer , 1024 , stdin) == NULL)
+    {
+        fprintf(stdrr, "FAILED TO READ INPUT.\n");
+        return;
+    }
     if(strchr(fm->buffer, '\n') == NULL)
     {
         clear_input_buffer();
@@ -84,7 +88,11 @@ void delete_folder(FileManager *fm)
     char folder_name[250];
 
     printf("do you want to delete a folder?[y/n]\n");
-    fgets(fm->buffer , 1024 , stdin);
+    if(fgets(fm->buffer , 1024 , stdin)== NULL)
+    {
+        fprintf(stdrr, "FAILED TO READ INPUT.\n");
+        return;
+    }
     if(strchr(fm->buffer, '\n')== NULL)
     {
         clear_input_buffer();
@@ -117,7 +125,11 @@ void delete_folder(FileManager *fm)
             return;
         }
 
-        closedir(dir);
+        if(closedir(dir) == -1)
+        {
+            perror("closedir failde");
+            return;
+        }
 
         if(RMDIR(folder_name) == 0)
         {
@@ -126,15 +138,10 @@ void delete_folder(FileManager *fm)
         }
         else
         {
-            perror("failed to delete folder.");
+            perror("rmdir failde");
             return;
 
         }
-    }
-     else
-    {
-        printf("invalid input.\n");
-        return;
     }
 
 }
@@ -149,7 +156,11 @@ void file_list_in_folder(FileManager *fm)
     struct dirent *entry;
 
     printf("Do you want to see a list of a folder?[y/n]\n");
-    fgets(fm ->buffer , 1024 , stdin);
+    if(fgets(fm ->buffer , 1024 , stdin) == NULL)
+    {
+        fprintf(stdrr, "FAILED TO READ INPUT.\n");
+        return;
+    }
     if(strchr(fm->buffer, '\n')==NULL)
     {
         clear_input_buffer();
@@ -182,6 +193,8 @@ void file_list_in_folder(FileManager *fm)
             return;
         }
 
+        errno =0;
+
         while((entry = readdir(dir)) != NULL)
         {
 
@@ -194,8 +207,15 @@ void file_list_in_folder(FileManager *fm)
 
             printf("%s\n" ,entry->d_name);
         }
+        if(errno != 0)
+        {
+            perror("readdir failde");
+        }
 
-        closedir(dir);
+        if(closedir(dir) == -1)
+        {
+            perror("closedir failde");
+        }
     }
 
     else
