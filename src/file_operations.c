@@ -582,12 +582,11 @@ void copy_file(FileManager *fm)
         fputs(fm->buffer, dst);
     }
 
-        printf("file copied successfully!\n");
 
-    if(ferror(scr))
+    if(ferror(src))
     {
         perror("Error reading file");
-        fclose(scr);
+        fclose(src);
         fclose(dst);
         return;
     }
@@ -595,13 +594,13 @@ void copy_file(FileManager *fm)
     if (fclose(dst) == EOF)
     {
         perror("Error closing file");
-        fclose(scr);
+        fclose(src);
         return;
     }
 
+    printf("file copied successfully!\n");
 
     fclose(src);
-    fclose(dst);
 
 
 }
