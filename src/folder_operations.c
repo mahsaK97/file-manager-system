@@ -62,7 +62,7 @@ void create_folder(FileManager *fm)
         if(dir != NULL)
         {
             printf("THERE IS A FOLDER WITH THIS NAME ALREADY.\n");
-            if(closedir(dir) = -1)
+            if(closedir(dir) == -1)
             {
                 perror("closedir failde");
             }

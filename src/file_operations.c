@@ -55,7 +55,7 @@ void create_file(FileManager *fm)
               }
               return;
           }
-          if(strchr(content_ptr,'\n')== NULL)
+          if(strchr(file_name,'\n')== NULL)
           {
               clear_input_buffer();
           }
@@ -584,16 +584,18 @@ void copy_file(FileManager *fm)
 
         printf("file copied successfully!\n");
 
-    if(ferror(fp))
+    if(ferror(scr))
     {
         perror("Error reading file");
-        fclose(fp);
+        fclose(scr);
+        fclose(dst);
         return;
     }
 
-    if (fclose(fp) == EOF)
+    if (fclose(dst) == EOF)
     {
         perror("Error closing file");
+        fclose(scr);
         return;
     }
 
@@ -616,7 +618,7 @@ void move_file(FileManager *fm)
     printf("do you want to move a file?[y/n]\n");
     if(fgets(fm->buffer , 1024 , stdin)== NULL)
     {
-        fprintf("error reading input.\n");
+        fprintf(stderr,"error reading input.\n");
         return;
     }
 
