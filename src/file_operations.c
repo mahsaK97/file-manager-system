@@ -24,7 +24,12 @@ void create_file(FileManager *fm)
 
 
       printf("do you want to make a file?[y/n]\n");
-      fgets(fm->buffer , 1024 ,stdin);
+      if(fgets(fm->buffer , 1024 ,stdin) == NULL)
+      {
+        fprintf(stderr, "FAILED TO READ INPUT.\n");
+        return;
+
+      }
       if(strchr(fm->buffer, '\n') == NULL)
       {
           clear_input_buffer();
@@ -50,7 +55,7 @@ void create_file(FileManager *fm)
               }
               return;
           }
-          if(strchr(fm->buffer,'\n')== NULL)
+          if(strchr(content_ptr,'\n')== NULL)
           {
               clear_input_buffer();
           }
@@ -65,7 +70,12 @@ void create_file(FileManager *fm)
           {
               fclose(fp);
               printf("THERE IS ALREADY EXIST A FILE WITH THIS NAME.\n DO YOU WANT TO REPLACE IT?[Y/N]\n");
-              fgets(fm->buffer, 1024, stdin);
+              if(fgets(fm->buffer, 1024, stdin) == NULL)
+              {
+
+                   fprintf(stderr, "FAILED TO READ INPUT.\n");
+                   return;
+              }
 
               if(strchr(fm->buffer , '\n') == NULL)
               {
@@ -93,7 +103,12 @@ void create_file(FileManager *fm)
 
           printf("file create successfully!\n");
           printf("Do you want to add initial content? (y/n)");
-          fgets(fm->buffer, 1024, stdin);
+          if(fgets(fm->buffer, 1024, stdin) == NULL)
+          {
+
+                fprintf(stderr, "FAILED TO READ INPUT.\n");
+                return;
+          }
           if(strchr(fm->buffer, '\n') == NULL)
           {
               clear_input_buffer();
@@ -114,7 +129,12 @@ void create_file(FileManager *fm)
                      return;
                  }
                  printf("enter content:");
-                 fgets(content_ptr , 2048 , stdin);
+                 if(fgets(content_ptr , 2048 , stdin) == NULL)
+                 {
+
+                       fprintf(stderr, "FAILED TO READ INPUT.\n");
+                       return;
+                 }
                  if(strchr(fm->buffer, '\n') == NULL)
                  {
                      clear_input_buffer();
@@ -149,7 +169,12 @@ void read_file()
      FILE *fp = NULL;
 
      printf("enter file name:\n");
-     fgets(file_name , sizeof(file_name) , stdin);
+     if(fgets(file_name , sizeof(file_name) , stdin) == NULL)
+     {
+
+        fprintf(stderr, "FAILED TO READ INPUT.\n");
+        return;
+     }
      if(strchr(file_name, '\n') == NULL)
      {
          clear_input_buffer();
@@ -182,8 +207,22 @@ void read_file()
          printf("%s" , line_ptr);
 
      }
+
+     if(ferror(fp))
+     {
+         perror("Error reading file");
+         fclose(fp);
+         return;
+     }
+
+     if(fclose(fp) == EOF)
+     {
+         perror("Error closing file");
+         return;
+     }
+
      printf("\n____END OF FILE____\n");
-     fclose(fp);
+
      free(line_ptr);
 }
 
@@ -195,7 +234,12 @@ void update_file(FileManager *fm)
      FILE *fp;
 
      printf("enter file name:\n");
-     fgets(file_name , sizeof(file_name) , stdin);
+     if(fgets(file_name , sizeof(file_name) , stdin)== NULL)
+     {
+
+        fprintf(stderr, "FAILED TO READ INPUT.\n");
+        return;
+     }
      if(strchr(file_name, '\n') == NULL)
      {
          clear_input_buffer();
@@ -218,7 +262,12 @@ void update_file(FileManager *fm)
      fclose(file_check);
      printf("choose mode : \n1.append \n2.overwrite\n");
      char *endptr;
-     fgets(fm->buffer, 1024, stdin);
+     if(fgets(fm->buffer, 1024, stdin) == NULL)
+     {
+
+        fprintf(stderr, "FAILED TO READ INPUT.\n");
+        return;
+     }
      if(strchr(fm->buffer , '\n') == NULL)
      {
          clear_input_buffer();
@@ -266,7 +315,12 @@ void update_file(FileManager *fm)
      }
 
      printf("enter new content:\n");
-     fgets(new_content, 2048 , stdin);
+     if(fgets(new_content, 2048 , stdin) == NULL)
+     {
+
+        fprintf(stderr, "FAILED TO READ INPUT.\n");
+        return;
+     }
      if(strchr(new_content, '\n')== NULL)
      {
          clear_input_buffer();
@@ -286,7 +340,12 @@ void delete_file(FileManager *fm)
      char file_name[250];
 
      printf("enter file name:");
-     fgets(file_name , sizeof(file_name) , stdin);
+     if(fgets(file_name , sizeof(file_name) , stdin) == NULL)
+     {
+
+        fprintf(stderr, "FAILED TO READ INPUT.\n");
+        return;
+     }
      if(strchr(file_name , '\n') == NULL)
      {
          clear_input_buffer();
@@ -307,7 +366,12 @@ void delete_file(FileManager *fm)
 
      fclose(fp);
      printf("do you want to delete %s ? (y/n)\n" , file_name);
-     fgets(fm->buffer , 1024 , stdin);
+     if(fgets(fm->buffer , 1024 , stdin) == NULL)
+     {
+
+        fprintf(stderr, "FAILED TO READ INPUT.\n");
+        return;
+     }
      if(strchr(fm->buffer, '\n') == NULL)
      {
          clear_input_buffer();
@@ -348,7 +412,12 @@ void rename_file(FileManager *fm)
     char new_name[250];
 
     printf("enter the name of the file you want to rename:\n");
-    fgets(old_name , sizeof(old_name) , stdin);
+    if(fgets(old_name , sizeof(old_name) , stdin) == NULL)
+    {
+
+        fprintf(stderr, "FAILED TO READ INPUT.\n");
+        return;
+    }
     if(strchr(old_name,'\n')== NULL)
     {
         clear_input_buffer();
@@ -369,7 +438,12 @@ void rename_file(FileManager *fm)
     fclose(fp);
 
     printf("enter the new name:\n");
-    fgets(new_name, sizeof(new_name), stdin);
+    if(fgets(new_name, sizeof(new_name), stdin)== NULL)
+    {
+
+        fprintf(stderr, "FAILED TO READ INPUT.\n");
+        return;
+    }
     if(strchr(new_name, '\n')== NULL)
     {
         clear_input_buffer();
@@ -392,7 +466,12 @@ void rename_file(FileManager *fm)
     {
         fclose(file_check);
         printf("a file with this name already exist. overwrite?[y/n]\n");
-        fgets(fm->buffer, 1024 , stdin);
+        if(fgets(fm->buffer, 1024 , stdin) == NULL)
+        {
+
+             fprintf(stderr, "FAILED TO READ INPUT.\n");
+             return;
+        }
         if(strchr(fm->buffer, '\n') == NULL)
         {
             clear_input_buffer();
@@ -432,7 +511,12 @@ void copy_file(FileManager *fm)
     FILE *dest_ptr;
 
     printf("enter source file name:");
-    fgets(source, sizeof(source) , stdin);
+    if(fgets(source, sizeof(source) , stdin) == NULL)
+    {
+
+        fprintf(stderr, "FAILED TO READ INPUT.\n");
+        return;
+    }
     if(strchr(source, '\n') == NULL)
     {
         clear_input_buffer();
@@ -451,7 +535,12 @@ void copy_file(FileManager *fm)
     }
 
     printf("enter destination file name:");
-    fgets(dest, sizeof(dest) , stdin);
+    if(fgets(dest, sizeof(dest) , stdin) ==NULL)
+    {
+
+        fprintf(stderr, "FAILED TO READ INPUT.\n");
+        return;
+    }
     if(strchr(dest, '\n') ==NULL)
     {
         clear_input_buffer();
@@ -495,6 +584,20 @@ void copy_file(FileManager *fm)
 
         printf("file copied successfully!\n");
 
+    if(ferror(fp))
+    {
+        perror("Error reading file");
+        fclose(fp);
+        return;
+    }
+
+    if (fclose(fp) == EOF)
+    {
+        perror("Error closing file");
+        return;
+    }
+
+
     fclose(src);
     fclose(dst);
 
@@ -513,7 +616,7 @@ void move_file(FileManager *fm)
     printf("do you want to move a file?[y/n]\n");
     if(fgets(fm->buffer , 1024 , stdin)== NULL)
     {
-        printf("error reading input.\n");
+        fprintf("error reading input.\n");
         return;
     }
 
@@ -529,7 +632,12 @@ void move_file(FileManager *fm)
     else if (fm->buffer[0]== 'y' || fm->buffer[0] == 'Y')
      {
         printf("enter file name: ");
-        fgets(file_name , sizeof(file_name) , stdin);
+        if(fgets(file_name , sizeof(file_name) , stdin)== NULL)
+        {
+
+            fprintf(stderr, "FAILED TO READ INPUT.\n");
+            return;
+        }
         if(strchr(file_name, '\n') == NULL)
         {
             clear_input_buffer();
@@ -551,7 +659,12 @@ void move_file(FileManager *fm)
            fclose(fp);
 
             printf("enter the new folder name: ");
-            fgets(folder_name , sizeof(folder_name) , stdin);
+            if(fgets(folder_name , sizeof(folder_name) , stdin) == NULL)
+            {
+
+                   fprintf(stderr, "FAILED TO READ INPUT.\n");
+                   return;
+            }
             if(strchr(folder_name, '\n')== NULL)
             {
                 clear_input_buffer();
@@ -586,7 +699,12 @@ void move_file(FileManager *fm)
              {
                  fclose(des_check);
                  printf("a file with this name already exists in the destination folder. overwrite?[y/n]\n");
-                    fgets(fm->buffer , 1024 , stdin);
+                    if(fgets(fm->buffer , 1024 , stdin) == NULL)
+                    {
+
+                        fprintf(stderr, "FAILED TO READ INPUT.\n");
+                        return;
+                    }
                     if(strchr(fm->buffer, '\n') == NULL)
                     {
                         clear_input_buffer();
