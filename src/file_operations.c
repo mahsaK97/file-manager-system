@@ -215,6 +215,7 @@ void read_file()
      {
          perror("Error reading file");
          fclose(fp);
+         free(line_ptr);
          return;
      }
 
