@@ -440,6 +440,7 @@ void rename_file(FileManager *fm)
     if (fp == NULL)
     {
         printf("file not found.\n");
+        fclose(src);
         return;
     }
     fclose(fp);
