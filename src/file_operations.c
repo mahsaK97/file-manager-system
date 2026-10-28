@@ -322,6 +322,8 @@ void update_file(FileManager *fm)
      {
 
         fprintf(stderr, "FAILED TO READ INPUT.\n");
+        free(new_content);
+        fclose(fp);
         return;
      }
      if(strchr(new_content, '\n')== NULL)
