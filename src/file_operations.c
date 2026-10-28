@@ -222,6 +222,7 @@ void read_file()
      if(fclose(fp) == EOF)
      {
          perror("Error closing file");
+         free(line_ptr);
          return;
      }
 
