@@ -138,7 +138,7 @@ void create_file(FileManager *fm)
                        return;
 
                  }
-                 if(strchr(fm->buffer, '\n') == NULL)
+                 if(strchr(content_ptr, '\n') == NULL)
                  {
                      clear_input_buffer();
                  }
