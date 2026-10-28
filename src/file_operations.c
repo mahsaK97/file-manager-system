@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <dirent.h>
-#include <error.h>
+
 
 #include "../include/file_operations.h"
 #include "../include/input_utls.h"
@@ -133,7 +133,10 @@ void create_file(FileManager *fm)
                  {
 
                        fprintf(stderr, "FAILED TO READ INPUT.\n");
+                       free(content_ptr);
+                       fclose(fp);
                        return;
+
                  }
                  if(strchr(fm->buffer, '\n') == NULL)
                  {
@@ -598,10 +601,10 @@ void copy_file(FileManager *fm)
         return;
     }
 
-    printf("file copied successfully!\n");
+
 
     fclose(src);
-
+    printf("file copied successfully!\n");
 
 }
 
