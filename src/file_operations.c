@@ -148,7 +148,13 @@ void create_file(FileManager *fm)
                      clear_input_buffer();
                  }
                  content_ptr[strcspn(content_ptr, "\n")] = '\0';
-                 fprintf(fp , "%s" , content_ptr);
+                 if(fprintf(fp , "%s" , content_ptr) == EOF)
+                 {
+                     perror("Failed to write to file");
+                     fclose(fp);
+                     free(content_ptr);
+                     return;
+                 }
                  free(content_ptr);
               }
 
