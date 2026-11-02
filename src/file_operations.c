@@ -105,7 +105,7 @@ void create_file(FileManager *fm)
                    return;
                  }
 
-          printf("file create successfully!\n");
+
           printf("Do you want to add initial content? (y/n)");
           if(fgets(fm->buffer, 1024, stdin) == NULL)
           {
@@ -150,6 +150,9 @@ void create_file(FileManager *fm)
                  fprintf(fp , "%s" , content_ptr);
                  free(content_ptr);
               }
+
+
+        printf("file create successfully!\n");
 
            else
               {
