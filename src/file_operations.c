@@ -68,7 +68,11 @@ void create_file(FileManager *fm)
           fp =fopen(file_name , "r");
           if(fp != NULL)
           {
-              fclose(fp);
+              if(fclose(fp) == EOF)
+              {
+                  perror("Failed to close file");
+                  return;
+              }
               printf("THERE IS ALREADY EXIST A FILE WITH THIS NAME.\n DO YOU WANT TO REPLACE IT?[Y/N]\n");
               if(fgets(fm->buffer, 1024, stdin) == NULL)
               {
