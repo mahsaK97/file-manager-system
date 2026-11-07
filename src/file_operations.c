@@ -173,7 +173,10 @@ void create_file(FileManager *fm)
 
       if(fp != NULL)
       {
-          fclose(fp);
+          if(fclose(fp) == EOF)
+          {
+              perror("Failed to close file");
+          }
       }
 }
 
