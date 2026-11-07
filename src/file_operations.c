@@ -62,17 +62,16 @@ void create_file(FileManager *fm)
           file_name[strcspn(file_name ,"\n")] = '\0';
           if(file_name[0] == '\0')
           {
-              printf("file name can not be empty.\n");
+              printf("file name can not be empty.\n")state ;
               return;
           }
-          fp =fopen(file_name , "r");
-          if(fp != NULL)
+          struct state file_name;
+          if(stat(file_name, &file_info)==0)
           {
-              if(fclose(fp) == EOF)
-              {
-                  perror("Failed to close file");
-                  return;
-              }
+              printf("THERE IS ALREADY EXIST A FILE WITH THIS NAME.\n");
+              return;
+          }
+
               printf("THERE IS ALREADY EXIST A FILE WITH THIS NAME.\n DO YOU WANT TO REPLACE IT?[Y/N]\n");
               if(fgets(fm->buffer, 1024, stdin) == NULL)
               {
