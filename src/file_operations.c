@@ -98,32 +98,24 @@ void create_file(FileManager *fm)
               }
           }
 
-          fp = fopen(file_name , "w");
-          if(fp == NULL)
-                 {
-                  printf("error file creating.\n");
-                   return;
-                 }
-
-
           printf("Do you want to add initial content? (y/n)");
           if(fgets(fm->buffer, 1024, stdin) == NULL)
           {
-
                 fprintf(stderr, "FAILED TO READ INPUT.\n");
                 return;
           }
           if(strchr(fm->buffer, '\n') == NULL)
-          {
-              clear_input_buffer();
-          }
+              {
+                  clear_input_buffer();
+              }
           if (fm->buffer[0] =='n' || fm->buffer[0] == 'N')
               {
                   printf("no content added.\n");
                   fclose(fp);
                   return;
               }
-          else if(fm->buffer[0] == 'y' || fm->buffer[0] == 'Y')
+
+           else if(fm->buffer[0] == 'y' || fm->buffer[0] == 'Y')
               {
                  char *content_ptr = malloc(2048 * sizeof (char));
                  if(content_ptr == NULL)
@@ -132,6 +124,14 @@ void create_file(FileManager *fm)
                      fclose(fp);
                      return;
                  }
+
+                 fp = fopen(file_name , "w");
+                 if(fp == NULL)
+                     {
+                          printf("error file creating.\n");
+                          return;
+                     }
+
                  printf("enter content:");
                  if(fgets(content_ptr , 2048 , stdin) == NULL)
                  {
