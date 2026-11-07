@@ -159,7 +159,7 @@ void create_file(FileManager *fm)
               }
 
 
-        printf("file create successfully!\n");
+               printf("file create successfully!\n");
 
            else
               {
@@ -454,7 +454,7 @@ void rename_file(FileManager *fm)
     if (fp == NULL)
     {
         printf("file not found.\n");
-        fclose(src);
+        fclose(fp);
         return;
     }
     fclose(fp);
