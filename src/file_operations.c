@@ -50,7 +50,7 @@ void create_file(FileManager *fm)
               }
               else
               {
-                  perror("fegts");
+                  perror("fgets");
 
               }
               return;
@@ -62,35 +62,34 @@ void create_file(FileManager *fm)
           file_name[strcspn(file_name ,"\n")] = '\0';
           if(file_name[0] == '\0')
           {
-              printf("file name can not be empty.\n")state ;
+              printf("file name can not be empty.\n");
               return;
           }
-          struct state file_name;
+          struct stat file_info;
           if(stat(file_name, &file_info)==0)
           {
               printf("THERE IS ALREADY EXIST A FILE WITH THIS NAME.\n");
               return;
           }
 
-              printf("THERE IS ALREADY EXIST A FILE WITH THIS NAME.\n DO YOU WANT TO REPLACE IT?[Y/N]\n");
-              if(fgets(fm->buffer, 1024, stdin) == NULL)
+          printf("THERE IS ALREADY EXIST A FILE WITH THIS NAME.\n DO YOU WANT TO REPLACE IT?[Y/N]\n");
+          if(fgets(fm->buffer, 1024, stdin) == NULL)
               {
-
                    fprintf(stderr, "FAILED TO READ INPUT.\n");
                    return;
               }
 
-              if(strchr(fm->buffer , '\n') == NULL)
+          if(strchr(fm->buffer , '\n') == NULL)
               {
                   clear_input_buffer();
               }
 
-              if(fm->buffer[0]== 'N' || fm->buffer[0]=='n')
+          if(fm->buffer[0]== 'N' || fm->buffer[0]=='n')
               {
                   printf("OKAY.BACK TO MENU...\n");
                   return;
               }
-              else if(fm->buffer[0] != 'y' && fm->buffer[0]!= 'Y')
+          else if(fm->buffer[0] != 'y' && fm->buffer[0]!= 'Y')
               {
                   printf("INVALID INPUT.\n");
                   return;
@@ -114,7 +113,7 @@ void create_file(FileManager *fm)
                   return;
               }
 
-           else if(fm->buffer[0] == 'y' || fm->buffer[0] == 'Y')
+          else if(fm->buffer[0] == 'y' || fm->buffer[0] == 'Y')
               {
                  char *content_ptr = malloc(2048 * sizeof (char));
                  if(content_ptr == NULL)
@@ -163,7 +162,7 @@ void create_file(FileManager *fm)
               {
                 printf("input is invalid.\n");
               }
-      }
+
 
     else
         {
