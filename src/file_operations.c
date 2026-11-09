@@ -17,6 +17,32 @@
 #endif
 
 
+
+static int read_line(char *buf, size_t size)
+{
+    if(fgets(buf,(int)size,stdin)== NULL)
+    {
+        if(feof(stdin))
+        {
+            printf("END OF FILE\n");
+        }
+
+        else
+        {
+            perror("fgets");
+        }
+        return 0;
+    }
+    if(strchr(buf,'\n')== NULL)
+    {
+        clear_input_buffer();
+    }
+    buf[strcspn(buf, "\n")] ='\0';
+    return 1;
+}
+
+
+
 void create_file(FileManager *fm)
 {
       FILE *fp =NULL;
