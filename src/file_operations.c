@@ -41,7 +41,30 @@ static int read_line(char *buf, size_t size)
     return 1;
 }
 
+static int ask_yes_no(FileManager &fm, const char *prompt)
+{
+    printf("%s", prompt);
+    if(!read_line(fm->buffer, sizeof(fm->buffer)))
+    {
+        return -1;
+    }
 
+    if(fm->buffer[0] == 'y' || fm->buffer[0]=='Y')
+    {
+        return 1;
+    }
+
+    if(fm->buffer[0]=='n' || fm->buffer[0]=='N')
+    {
+        return 0;
+    }
+
+    else
+    {
+        printf("INVALIDE INPUT.\N");
+        return -1;
+    }
+}
 
 void create_file(FileManager *fm)
 {
