@@ -61,170 +61,82 @@ static int ask_yes_no(FileManager &fm, const char *prompt)
 
     else
     {
-        printf("INVALIDE INPUT.\N");
+        printf("INVALIDE INPUT.\n");
         return -1;
     }
 }
 
 void create_file(FileManager *fm)
 {
-      FILE *fp =NULL;
       char file_name[250];
+      char content[2048];
+      struct stat file_info;
 
-
-      printf("do you want to make a file?[y/n]\n");
-      if(fgets(fm->buffer , 1024 ,stdin) == NULL)
+      if(ask_yes_no(fm, "DO YOU WANT TO CREATE A FILE?[y/n]\n") == 1)
       {
-        fprintf(stderr, "FAILED TO READ INPUT.\n");
-        return;
-
-      }
-      if(strchr(fm->buffer, '\n') == NULL)
-      {
-          clear_input_buffer();
-      }
-      if (fm->buffer[0] == 'n' || fm->buffer[0] == 'N')
-      {
-          printf("file creation cancelled.\n");
+          printf("okay.backto menu...\n");
           return;
       }
-      else if (fm->buffer[0] == 'y' || fm->buffer[0] == 'Y')
+
+      printf("enter file name: ");
+      if(!read_line(file_name, sizeof(file_name)))
       {
-          printf("enter file name:\n");
-          if(fgets(file_name , sizeof(file_name) , stdin)==NULL)
-          {
-              if(feof(stdin))
-              {
-                  printf("END OF FILE.\n");
-              }
-              else
-              {
-                  perror("fgets");
+          return;
+      }
 
-              }
-              return;
-          }
-          if(strchr(file_name,'\n')== NULL)
-          {
-              clear_input_buffer();
-          }
-          file_name[strcspn(file_name ,"\n")] = '\0';
-          if(file_name[0] == '\0')
-          {
-              printf("file name can not be empty.\n");
-              return;
-          }
-          struct stat file_info;
-          if(stat(file_name, &file_info)==0)
-          {
-              printf("THERE IS ALREADY EXIST A FILE WITH THIS NAME.\n");
-              return;
-          }
-
-          printf("THERE IS ALREADY EXIST A FILE WITH THIS NAME.\n DO YOU WANT TO REPLACE IT?[Y/N]\n");
-          if(fgets(fm->buffer, 1024, stdin) == NULL)
-              {
-                   fprintf(stderr, "FAILED TO READ INPUT.\n");
-                   return;
-              }
-
-          if(strchr(fm->buffer , '\n') == NULL)
-              {
-                  clear_input_buffer();
-              }
-
-          if(fm->buffer[0]== 'N' || fm->buffer[0]=='n')
-              {
-                  printf("OKAY.BACK TO MENU...\n");
-                  return;
-              }
-          else if(fm->buffer[0] != 'y' && fm->buffer[0]!= 'Y')
-              {
-                  printf("INVALID INPUT.\n");
-                  return;
-              }
-          }
-
-          printf("Do you want to add initial content? (y/n)");
-          if(fgets(fm->buffer, 1024, stdin) == NULL)
-          {
-                fprintf(stderr, "FAILED TO READ INPUT.\n");
-                return;
-          }
-          if(strchr(fm->buffer, '\n') == NULL)
-              {
-                  clear_input_buffer();
-              }
-          if (fm->buffer[0] =='n' || fm->buffer[0] == 'N')
-              {
-                  printf("no content added.\n");
-                  fclose(fp);
-                  return;
-              }
-
-          else if(fm->buffer[0] == 'y' || fm->buffer[0] == 'Y')
-              {
-                 char *content_ptr = malloc(2048 * sizeof (char));
-                 if(content_ptr == NULL)
-                 {
-                     printf("Memory allocation failed.\n");
-                     fclose(fp);
-                     return;
-                 }
-
-                 fp = fopen(file_name , "w");
-                 if(fp == NULL)
-                     {
-                          printf("error file creating.\n");
-                          return;
-                     }
-
-                 printf("enter content:");
-                 if(fgets(content_ptr , 2048 , stdin) == NULL)
-                 {
-
-                       fprintf(stderr, "FAILED TO READ INPUT.\n");
-                       free(content_ptr);
-                       fclose(fp);
-                       return;
-
-                 }
-                 if(strchr(content_ptr, '\n') == NULL)
-                 {
-                     clear_input_buffer();
-                 }
-                 content_ptr[strcspn(content_ptr, "\n")] = '\0';
-                 if(fprintf(fp , "%s" , content_ptr) == EOF)
-                 {
-                     perror("Failed to write to file");
-                     fclose(fp);
-                     free(content_ptr);
-                     return;
-                 }
-                 free(content_ptr);
-              }
-
-
-               printf("file create successfully!\n");
-
-           else
-              {
-                printf("input is invalid.\n");
-              }
-
-
-    else
-        {
-             printf("input is invalid.\n");
-        }
-
-      if(fp != NULL)
+      if(file_name[0]=='\0')
       {
-          if(fclose(fp) == EOF)
+          printf("FILE NAME CAN'T BE EMPTY.\n");
+          return;
+      }
+
+      if(stat(file_info, file_name)==0)
+      {
+          if(ask_yes_no(fm, "A FILE WITH THIS NAME IS ALREADY EXSITS.REPLACE IT?[Y/N]\n")!=1)
           {
-              perror("Failed to close file");
+              printf("BACK TO MENU...\n");
+              return;
           }
       }
+
+      int add =ask_yes_no(fm, "DO YOU WANT TO ADD INITIAL CONTENT?[Y/N]\n");
+      if(add == -1)
+      {
+          return;
+      }
+
+      FILE fp = fopen(file_name, "w");
+      if(fp == NULL)
+      {
+          perror("ERROR CREATING FILE.");
+          return;
+      }
+
+      if(add == 1)
+      {
+          printf("enter content:\n");
+          if(!read_line(content, sizeof(content)))
+          {
+              fclose(fp);
+              return;
+          }
+          if(fprintf(fp, "%s", content)<0)
+          {
+              perror("FAILED TO WRITE TO FILE");
+              fclose(fp);
+              return;
+
+          }
+      }
+
+
+      if(fclose(fp) == EOF)
+      {
+          perror("FAILED TO CLOSE FILE.");
+          return;
+      }
+
+      printf("FILE CREATE SUCCESSFULLY.\n");
 }
 
 
