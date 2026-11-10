@@ -108,7 +108,7 @@ void create_file(FileManager *fm)
       FILE *fp = fopen(file_name, "w");
       if(fp == NULL)
       {
-          perror("ERROR CREATING FILE.");
+          perror("ERROR CREATING FILE");
           return;
       }
 
@@ -132,7 +132,7 @@ void create_file(FileManager *fm)
 
       if(fclose(fp) == EOF)
       {
-          perror("FAILED TO CLOSE FILE.");
+          perror("FAILED TO CLOSE FILE");
           return;
       }
 
