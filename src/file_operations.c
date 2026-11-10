@@ -72,7 +72,7 @@ void create_file(FileManager *fm)
       char content[2048];
       struct stat file_info;
 
-      if(ask_yes_no(fm, "DO YOU WANT TO CREATE A FILE?[y/n]\n") == 1)
+      if(ask_yes_no(fm, "DO YOU WANT TO CREATE A FILE?[y/n]\n") != 1)
       {
           printf("okay.backto menu...\n");
           return;
