@@ -90,7 +90,7 @@ void create_file(FileManager *fm)
           return;
       }
 
-      if(stat(file_info, file_name)==0)
+      if(stat(file_name,&file_info )==0)
       {
           if(ask_yes_no(fm, "A FILE WITH THIS NAME IS ALREADY EXSITS.REPLACE IT?[Y/N]\n")!=1)
           {
