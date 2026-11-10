@@ -105,7 +105,7 @@ void create_file(FileManager *fm)
           return;
       }
 
-      FILE fp = fopen(file_name, "w");
+      FILE *fp = fopen(file_name, "w");
       if(fp == NULL)
       {
           perror("ERROR CREATING FILE.");
@@ -137,73 +137,6 @@ void create_file(FileManager *fm)
       }
 
       printf("FILE CREATE SUCCESSFULLY.\n");
-}
-
-
-
-void read_file()
-{
-     char file_name[250];
-     FILE *fp = NULL;
-
-     printf("enter file name:\n");
-     if(fgets(file_name , sizeof(file_name) , stdin) == NULL)
-     {
-
-        fprintf(stderr, "FAILED TO READ INPUT.\n");
-        return;
-     }
-     if(strchr(file_name, '\n') == NULL)
-     {
-         clear_input_buffer();
-     }
-     file_name[strcspn(file_name , "\n")] = '\0';
-     if(file_name[0] == '\0')
-        {
-            printf("FILE NAME CAN'T BE EMPTY.\n");
-            return;
-        }
-     char *line_ptr = malloc(2048 * sizeof(char));
-     if(line_ptr == NULL)
-     {
-         printf("Memory allocation failed.\n");
-         return;
-     }
-
-     fp = fopen(file_name , "r");
-
-     if(fp == NULL)
-     {
-         printf("Error: Cannot open file. It may not exist or access is denied.\n");
-         free(line_ptr);
-         return;
-     }
-
-     while(fgets(line_ptr, 2048 ,fp) != NULL )
-     {
-
-         printf("%s" , line_ptr);
-
-     }
-
-     if(ferror(fp))
-     {
-         perror("Error reading file");
-         fclose(fp);
-         free(line_ptr);
-         return;
-     }
-
-     if(fclose(fp) == EOF)
-     {
-         perror("Error closing file");
-         free(line_ptr);
-         return;
-     }
-
-     printf("\n____END OF FILE____\n");
-
-     free(line_ptr);
 }
 
 
