@@ -141,6 +141,70 @@ void create_file(FileManager *fm)
 
 
 
+
+void read_file(FileManager &fm)
+{
+     char file_name[250];
+     char line[1024];
+     struct stat file_info;
+
+
+     if(ask_yes_no(fm,"DO YOU WANT TO READ A FILE?[Y/N]\n") != 1)
+     {
+         printf("OKAY.BACK TO MENU.../n");
+         return;
+     }
+     printf("ENTER FILE NAME: ");
+     if(!read_line(file_name, sizeof(file_name)))
+      {
+          return;
+      }
+
+      if(file_name[0]== '\0')
+      {
+          printf("FILE NAME CAN'T BE EMPTY.\n");
+          return;
+      }
+      if(stat( file_name,&file_info) != 0)
+      {
+          printf("THERE IS NO FILE WITH THIS NAME.\n");
+          return;
+      }
+
+      if(!S_ISREG(file_info.st_mode))
+      {
+           printf("THIS IS NOT A REGULAR FILE.\n");
+           return;
+      }
+
+      FILE *fp = fopen(file_name, "r");
+      if(fp == NULL)
+      {
+          perror("ERROR OPENING FILE.");
+          return;
+      }
+
+      printf("______FILE CONTENT______\n");
+      while(fgets(line, sizeof(line), fp) !=NULL)
+      {
+          fputs(line, stdout);
+      }
+      if(ferror(fp))
+      {
+          perror("ERROR READING FILE");
+      }
+
+      printf("\n_____END OF FILE_____\n");
+
+      if(fclose(fp) == EOF)
+      {
+          perror("FAILED TO CLOSE FILE");
+      }
+
+
+}
+
+
 void update_file(FileManager *fm)
 {
      char file_name[250];
