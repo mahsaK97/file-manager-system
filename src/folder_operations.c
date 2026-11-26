@@ -2,8 +2,9 @@
 #include <dirent.h>
 #include <string.h>
 #include <errno.h>
+#include <sys/stat.h>
 
-#include "../include/file_operations.h"
+#include "../include/folder_operations.h"
 #include "../include/input_utls.h"
 
 #ifdef _WIN32
@@ -13,230 +14,270 @@
 
 
 #else
-    #include <sys/stat.h>
     #include <unistd.h>
     #define MKDIR(name) mkdir(name,0777)
     #define RMDIR(name) rmdir(name)
 
 #endif // WIN32
 
-void create_folder(FileManager *fm)
+#define NAME_SIZE 250
+
+
+/* ---------- helpers ---------- */
+
+static int read_line(char *buf, size_t size)
 {
-
-    char name_of_folder[250];
-
-    printf("do you want to make a folder?[y/n]\n");
-    if(fgets(fm->buffer , 1024 , stdin) == NULL)
+    if(fgets(buf,(int)size,stdin)== NULL)
     {
-        fprintf(stderr, "FAILED TO READ INPUT.\n");
-        return;
-    }
-    if(strchr(fm->buffer, '\n') == NULL)
-    {
-        clear_input_buffer();
-    }
-    if(fm->buffer[0] =='\0')
-    {
-        printf("ANSWER CAN'T BE EMPTY.\n");
-        return;
-    }
-    if(fm->buffer[0] == 'y' || fm->buffer[0] == 'Y')
-    {
-        printf("enter name of folder:\n");
-        if(fgets(name_of_folder , sizeof(name_of_folder) , stdin) == NULL)
+        if(feof(stdin))
         {
-             fprintf(stderr, "FAILED TO READ INPUT.\n");
-             return;
-        }
-        if(strchr(name_of_folder, '\n') == NULL)
-        {
-            clear_input_buffer();
-        }
-        name_of_folder[strcspn(name_of_folder , "\n")] = '\0';
-        if(name_of_folder[0] =='\0')
-        {
-            printf("FOLDER NAME CAN'T BE EMPTY.\n");
-            return;
-        }
-        DIR *dir = opendir(name_of_folder);
-        if(dir != NULL)
-        {
-            printf("THERE IS A FOLDER WITH THIS NAME ALREADY.\n");
-            if(closedir(dir) == -1)
-            {
-                perror("closedir failde");
-            }
-
-            return;
-        }
-        if(MKDIR(name_of_folder) == 0)
-        {
-             printf("folder created successfully.\n");
+            printf("END OF FILE\n");
         }
 
         else
         {
-            perror("mkdir failed");
+            perror("fgets");
         }
+        return 0;
     }
-    else if (fm->buffer[0] == 'n' || fm->buffer[0] == 'N')
+    if(strchr(buf,'\n')== NULL)
     {
-        printf("folder creation cancelled.\n");
+        clear_input_buffer();
+    }
+    buf[strcspn(buf, "\n")] ='\0';
+    return 1;
+}
+
+/* returns 1 = yes, 0 = no, -1 = invalid input or read error */
+static int ask_yes_no(const char *prompt)
+{
+    char answer[16];
+
+    printf("%s", prompt);
+    if(!read_line(answer, sizeof(answer)))
+    {
+        return -1;
+    }
+
+    if(answer[0] == 'y' || answer[0] == 'Y')
+    {
+        return 1;
+    }
+
+    if(answer[0] == 'n' || answer[0] == 'N')
+    {
+        return 0;
+    }
+
+    printf("INVALID INPUT.\n");
+    return -1;
+}
+
+/* prints the prompt, reads a name, rejects empty names. returns 1 on success */
+static int read_name(const char *prompt, char *buf, size_t size)
+{
+    printf("%s", prompt);
+    if(!read_line(buf, size))
+    {
+        return 0;
+    }
+
+    if(buf[0] == '\0')
+    {
+        printf("FOLDER NAME CAN'T BE EMPTY.\n");
+        return 0;
+    }
+    return 1;
+}
+
+typedef enum
+{
+    KIND_MISSING = 0,
+    KIND_DIR,
+    KIND_OTHER,
+    KIND_ERROR
+} PathKind;
+
+/* unlike opendir(), stat() tells "does not exist" apart from "exists but is a file / no permission" */
+static PathKind path_kind(const char *path)
+{
+    struct stat info;
+
+    if(stat(path, &info) != 0)
+    {
+        if(errno == ENOENT)
+        {
+            return KIND_MISSING;
+        }
+        perror("stat");
+        return KIND_ERROR;
+    }
+
+    return S_ISDIR(info.st_mode) ? KIND_DIR : KIND_OTHER;
+}
+
+
+/* ---------- folder operations ---------- */
+
+void create_folder(FileManager *fm)
+{
+    char name_of_folder[NAME_SIZE];
+    (void)fm;
+
+    int answer = ask_yes_no("DO YOU WANT TO MAKE A FOLDER?[y/n]\n");
+    if(answer != 1)
+    {
+        if(answer == 0)
+        {
+            printf("FOLDER CREATION CANCELLED.\n");
+        }
+        return;
+    }
+
+    if(!read_name("ENTER NAME OF FOLDER:\n", name_of_folder, sizeof(name_of_folder)))
+    {
+        return;
+    }
+
+    switch(path_kind(name_of_folder))
+    {
+        case KIND_DIR:
+            printf("THERE IS A FOLDER WITH THIS NAME ALREADY.\n");
+            return;
+        case KIND_OTHER:
+            printf("THERE IS A FILE WITH THIS NAME ALREADY.\n");
+            return;
+        case KIND_ERROR:
+            return;
+        default:
+            break;
+    }
+
+    if(MKDIR(name_of_folder) == 0)
+    {
+        printf("FOLDER CREATED SUCCESSFULLY.\n");
     }
 
     else
     {
-        printf("invalid input.\n");
+        perror("MKDIR FAILED");
     }
-
 }
+
 
 void delete_folder(FileManager *fm)
 {
-    char folder_name[250];
+    char folder_name[NAME_SIZE];
+    (void)fm;
 
-    printf("do you want to delete a folder?[y/n]\n");
-    if(fgets(fm->buffer , 1024 , stdin)== NULL)
+    int answer = ask_yes_no("DO YOU WANT TO DELETE A FOLDER?[y/n]\n");
+    if(answer != 1)
     {
-        fprintf(stderr, "FAILED TO READ INPUT.\n");
-        return;
-    }
-    if(strchr(fm->buffer, '\n')== NULL)
-    {
-        clear_input_buffer();
-    }
-    if(fm->buffer[0] == 'N' || fm->buffer[0] =='n')
-    {
-        printf("folder is not deleted.\n");
+        if(answer == 0)
+        {
+            printf("FOLDER IS NOT DELETED.\n");
+        }
         return;
     }
 
-    else if(fm->buffer[0] == 'y' || fm->buffer[0] == 'Y')
+    if(!read_name("ENTER FOLDER NAME:\n", folder_name, sizeof(folder_name)))
     {
-        printf("enter folder name:\n");
-        if(fgets(folder_name , sizeof(folder_name) , stdin) == NULL)
-        {
-             fprintf(stderr, "FAILED TO READ INPUT.\n");
-             return;
-        }
-        if(strchr(folder_name,'\n')==NULL)
-        {
-            clear_input_buffer();
-        }
-        folder_name[strcspn(folder_name , "\n")] = '\0';
-        if(folder_name[0] == '\0')
-        {
-            printf("folder name cannot be empty.\n");
-            return;
-        }
+        return;
+    }
 
-        DIR *dir = opendir(folder_name);
-        if(dir == NULL)
-        {
+    switch(path_kind(folder_name))
+    {
+        case KIND_MISSING:
             printf("THERE IS NO FOLDER WITH THIS NAME.\n");
             return;
-        }
-
-        if(closedir(dir) == -1)
-        {
-            perror("closedir failde");
+        case KIND_OTHER:
+            printf("THIS IS NOT A FOLDER.\n");
             return;
-        }
-
-        if(RMDIR(folder_name) == 0)
-        {
-            printf("folder deleted successfully.\n");
+        case KIND_ERROR:
             return;
-        }
-        else
-        {
-            perror("rmdir failde");
-            return;
-
-        }
+        default:
+            break;
     }
 
+    if(RMDIR(folder_name) == 0)
+    {
+        printf("FOLDER DELETED SUCCESSFULLY.\n");
+        return;
+    }
+
+    if(errno == ENOTEMPTY || errno == EEXIST)
+    {
+        printf("FOLDER IS NOT EMPTY. DELETE ITS CONTENT FIRST.\n");
+        return;
+    }
+
+    perror("RMDIR FAILED");
 }
-
-
 
 
 void file_list_in_folder(FileManager *fm)
 {
     DIR *dir;
-    char folder_name[250];
+    char folder_name[NAME_SIZE];
     struct dirent *entry;
+    int count = 0;
+    (void)fm;
 
-    printf("Do you want to see a list of a folder?[y/n]\n");
-    if(fgets(fm ->buffer , 1024 , stdin) == NULL)
+    int answer = ask_yes_no("DO YOU WANT TO SEE A LIST OF A FOLDER?[y/n]\n");
+    if(answer != 1)
     {
-        fprintf(stderr, "FAILED TO READ INPUT.\n");
+        if(answer == 0)
+        {
+            printf("OKAY. BACK TO MENU...\n");
+        }
         return;
     }
-    if(strchr(fm->buffer, '\n')==NULL)
+
+    if(!read_name("ENTER FOLDER NAME: ", folder_name, sizeof(folder_name)))
     {
-        clear_input_buffer();
-    }
-    if(fm->buffer[0] == 'N' || fm->buffer[0] == 'n')
-    {
-        printf("okay. back to menu...\n");
         return;
     }
-    else if(fm->buffer[0] == 'y' || fm->buffer[0] =='Y')
+
+    dir = opendir(folder_name);
+    if(dir == NULL)
     {
-        printf("enter folder name: ");
-        if(fgets(folder_name , sizeof(folder_name) , stdin) ==NULL)
-        {
-             fprintf(stderr, "FAILED TO READ INPUT.\n");
-             return;
-        }
-        if(strchr(folder_name, '\n')==NULL)
-        {
-            clear_input_buffer();
-        }
-        folder_name[strcspn(folder_name,"\n")] = '\0';
-        if(folder_name[0] == '\0')
-        {
-            printf("FOLDER NAME CAN'T BE EMPTY.\n");
-            return;
-        }
-
-        dir = opendir(folder_name);
-
-        if(dir == NULL)
-        {
-            perror("cannot open folder");
-            return;
-        }
-
-        errno =0;
-
-        while((entry = readdir(dir)) != NULL)
-        {
-
-            if((strcmp(entry->d_name, ".") == 0)
-            || (strcmp(entry ->d_name, "..")==0))
-            {
-                continue;
-            }
-
-
-            printf("%s\n" ,entry->d_name);
-        }
-        if(errno != 0)
-        {
-            perror("readdir failde");
-        }
-
-        if(closedir(dir) == -1)
-        {
-            perror("closedir failde");
-        }
+        perror("CANNOT OPEN FOLDER");
+        return;
     }
 
-    else
+    /* errno must be reset right before EVERY readdir() call: printf() inside the loop
+       may change errno, and readdir() only signals an error by setting it */
+    while(1)
     {
-        printf("invalid input.\n");
-        return;
+        errno = 0;
+        entry = readdir(dir);
+        if(entry == NULL)
+        {
+            break;
+        }
+
+        if((strcmp(entry->d_name, ".") == 0)
+        || (strcmp(entry->d_name, "..") == 0))
+        {
+            continue;
+        }
+
+        printf("%s\n", entry->d_name);
+        count++;
+    }
+
+    if(errno != 0)
+    {
+        perror("READDIR FAILED");
+    }
+
+    else if(count == 0)
+    {
+        printf("THE FOLDER IS EMPTY.\n");
+    }
+
+    if(closedir(dir) == -1)
+    {
+        perror("CLOSEDIR FAILED");
     }
 }

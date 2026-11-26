@@ -1,394 +1,492 @@
+#ifndef _WIN32
+    #ifndef _POSIX_C_SOURCE
+        #define _POSIX_C_SOURCE 200809L   /* needed for lstat() with -std=c11 */
+    #endif
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <dirent.h>
 #include <string.h>
+#include <errno.h>
 #include <sys/stat.h>
 
 
 #include "../include/search_operations.h"
 #include "../include/input_utls.h"
 
+#ifdef _WIN32
+    #define PATH_SEPARATOR "\\"
+    #define LSTAT(path, info) stat(path, info)   /* no symbolic links handling on Windows */
+#else
+    #define PATH_SEPARATOR "/"
+    #define LSTAT(path, info) lstat(path, info)
+#endif
 
-void search_by_extension(FileManager *fm)
+#define NAME_SIZE  250
+#define EXT_SIZE   100
+#define PATH_SIZE  1024
+
+
+/* ---------- helpers ---------- */
+
+static int read_line(char *buf, size_t size)
 {
-    char extension[100];
-    char folder_name[250];
-    DIR *dir;
-    struct dirent *entry;
+    if(fgets(buf,(int)size,stdin)== NULL)
+    {
+        if(feof(stdin))
+        {
+            printf("END OF FILE\n");
+        }
 
-    printf("do you want to search by extension?[y/n]\n");
-    fgets(fm->buffer, 1024, stdin);
-    if(strchr(fm->buffer,'\n') == NULL)
+        else
+        {
+            perror("fgets");
+        }
+        return 0;
+    }
+    if(strchr(buf,'\n')== NULL)
     {
         clear_input_buffer();
     }
-    if(fm->buffer[0] =='n' || fm->buffer[0] == 'N')
-    {
-        printf("okay. back to menu...\n");
-        return;
-    }
-
-    else if (fm->buffer[0] == 'y' || fm->buffer[0] =='Y')
-    {
-        printf("enter extension (.example):");
-        fgets(extension, sizeof(extension) , stdin);
-        if(strchr(extension, '\n')==NULL)
-        {
-            clear_input_buffer();
-        }
-        extension[strcspn(extension, "\n")] ='\0';
-        if(extension[0] == '\0')
-        {
-            printf("EXTENSION CAN'T BE EMPTY.\n");
-            return;
-        }
-
-        printf("enter folder name:");
-        fgets(folder_name , sizeof(folder_name) , stdin);
-        if(strchr(folder_name,'\n') == NULL)
-        {
-            clear_input_buffer();
-        }
-        folder_name[strcspn(folder_name , "\n")] = '\0';
-        if(folder_name[0]== '\0')
-        {
-            printf("FOLDER NAME CAN'T BE EMPTY.\n");
-            return;
-        }
-
-        dir = opendir(folder_name);
-
-        if(dir == NULL)
-        {
-            printf("folder not found.\n");
-            return;
-        }
-        while((entry = readdir(dir)) != NULL)
-        {
-            if(entry->d_type == DT_DIR)
-            {
-                continue;
-            }
-
-            char *dot = strrchr(entry->d_name, '.');
-            if(dot != NULL)
-            {
-                if(strcmp(dot , extension) == 0)
-                  {
-                      printf("%s\n" , entry->d_name);
-                  }
-            }
-
-        }
-
-        closedir(dir);
-    }
-
-    else
-    {
-        printf("INVALID INPUT.\n");
-        return;
-    }
-
+    buf[strcspn(buf, "\n")] ='\0';
+    return 1;
 }
 
+/* returns 1 = yes, 0 = no, -1 = invalid input or read error */
+static int ask_yes_no(const char *prompt)
+{
+    char answer[16];
+
+    printf("%s", prompt);
+    if(!read_line(answer, sizeof(answer)))
+    {
+        return -1;
+    }
+
+    if(answer[0] == 'y' || answer[0] == 'Y')
+    {
+        return 1;
+    }
+
+    if(answer[0] == 'n' || answer[0] == 'N')
+    {
+        return 0;
+    }
+
+    printf("INVALID INPUT.\n");
+    return -1;
+}
+
+/* prints the prompt, reads a line, rejects empty input. returns 1 on success */
+static int read_name(const char *prompt, const char *what, char *buf, size_t size)
+{
+    printf("%s", prompt);
+    if(!read_line(buf, size))
+    {
+        return 0;
+    }
+
+    if(buf[0] == '\0')
+    {
+        printf("%s CAN'T BE EMPTY.\n", what);
+        return 0;
+    }
+    return 1;
+}
+
+/* asks the first y/n question of a search. returns 1 only when the user said yes */
+static int confirm_search(const char *prompt)
+{
+    int answer = ask_yes_no(prompt);
+
+    if(answer == 0)
+    {
+        printf("OKAY. BACK TO MENU...\n");
+    }
+    return answer == 1;
+}
+
+/* folder + name -> path. returns 0 when the result does not fit in out */
+static int build_path(char *out, size_t size, const char *folder, const char *name)
+{
+    int result = snprintf(out, size, "%s%s%s", folder, PATH_SEPARATOR, name);
+
+    if(result < 0 || (size_t)result >= size)
+    {
+        return 0;
+    }
+    return 1;
+}
+
+static int is_dot_entry(const char *name)
+{
+    return strcmp(name, ".") == 0 || strcmp(name, "..") == 0;
+}
+
+/* d_type is not available everywhere (and is DT_UNKNOWN on some file systems), so stat() is used */
+static int is_regular_file(const char *path)
+{
+    struct stat info;
+
+    if(stat(path, &info) != 0)
+    {
+        return 0;
+    }
+    return S_ISREG(info.st_mode);
+}
+
+static DIR *open_folder(const char *folder_name)
+{
+    DIR *dir = opendir(folder_name);
+
+    if(dir == NULL)
+    {
+        perror("CANNOT OPEN FOLDER");
+    }
+    return dir;
+}
+
+/* closes the folder and reports a readdir() failure that ended the loop early */
+static void finish_folder(DIR *dir)
+{
+    if(errno != 0)
+    {
+        perror("READDIR FAILED");
+    }
+
+    if(closedir(dir) == -1)
+    {
+        perror("CLOSEDIR FAILED");
+    }
+}
+
+
+/* ---------- search operations ---------- */
+
+void search_by_extension(FileManager *fm)
+{
+    char extension[EXT_SIZE];
+    char wanted[EXT_SIZE + 2];
+    char folder_name[NAME_SIZE];
+    char path[PATH_SIZE];
+    DIR *dir;
+    struct dirent *entry;
+    int found = 0;
+    (void)fm;
+
+    if(!confirm_search("DO YOU WANT TO SEARCH BY EXTENSION?[y/n]\n"))
+    {
+        return;
+    }
+
+    if(!read_name("ENTER EXTENSION (.example): ", "EXTENSION", extension, sizeof(extension)))
+    {
+        return;
+    }
+
+    /* accept both ".txt" and "txt" */
+    snprintf(wanted, sizeof(wanted), "%s%s", (extension[0] == '.') ? "" : ".", extension);
+
+    if(strcmp(wanted, ".") == 0)
+    {
+        printf("INVALID EXTENSION.\n");
+        return;
+    }
+
+    if(!read_name("ENTER FOLDER NAME: ", "FOLDER NAME", folder_name, sizeof(folder_name)))
+    {
+        return;
+    }
+
+    dir = open_folder(folder_name);
+    if(dir == NULL)
+    {
+        return;
+    }
+
+    while(1)
+    {
+        errno = 0;
+        entry = readdir(dir);
+        if(entry == NULL)
+        {
+            break;
+        }
+
+        if(is_dot_entry(entry->d_name))
+        {
+            continue;
+        }
+
+        /* a leading dot (".gitignore") is a hidden file name, not an extension */
+        char *dot = strrchr(entry->d_name, '.');
+        if(dot == NULL || dot == entry->d_name || strcmp(dot, wanted) != 0)
+        {
+            continue;
+        }
+
+        if(!build_path(path, sizeof(path), folder_name, entry->d_name))
+        {
+            printf("PATH IS TOO LONG: %s\n", entry->d_name);
+            continue;
+        }
+
+        if(is_regular_file(path))
+        {
+            printf("%s\n", entry->d_name);
+            found++;
+        }
+    }
+
+    finish_folder(dir);
+
+    if(found == 0)
+    {
+        printf("NO FILE WITH THIS EXTENSION WAS FOUND.\n");
+    }
+}
 
 
 void search_by_name(FileManager *fm)
 {
-    char file_name[250];
-    char folder_name[250];
-    int found =0;
-    DIR  *dir;
-    struct  dirent *entry;
+    char file_name[NAME_SIZE];
+    char folder_name[NAME_SIZE];
+    char path[PATH_SIZE];
+    DIR *dir;
+    struct dirent *entry;
+    int found = 0;
+    (void)fm;
 
-    printf("do you want to search a file in a folder?[y/n]");
-    fgets(fm->buffer, 1024 , stdin);
-    if(strchr(fm->buffer,'\n') == NULL)
+    if(!confirm_search("DO YOU WANT TO SEARCH A FILE IN A FOLDER?[y/n]\n"))
     {
-        clear_input_buffer();
+        return;
     }
-    if(fm->buffer[0] == 'n' || fm->buffer[0] == 'N')
-       {
-           printf("back to menu...\n");
-            return;
-       }
 
-    else if (fm->buffer[0] == 'y' || fm->buffer[0] == 'Y')
+    if(!read_name("ENTER FOLDER NAME: ", "FOLDER NAME", folder_name, sizeof(folder_name)))
     {
-        printf("enter folder name: ");
-        fgets(folder_name, sizeof(folder_name) ,stdin);
-        if(strchr(folder_name, '\n')== NULL)
-        {
-            clear_input_buffer();
-        }
-        folder_name[strcspn(folder_name, "\n")] = '\0';
-        if(folder_name[0] == '\0')
-        {
-            printf("folder name can't be empty.\n");
-            return;
-        }
-        else
-        {
-            dir=opendir(folder_name);
-            if(dir == NULL)
-            {
-                printf("folder can't be found.\n");
-                return;
-            }
-            printf("enter file name: ");
-            fgets(file_name, sizeof(file_name) , stdin);
-            if(strchr(file_name,'\n')== NULL)
-            {
-                clear_input_buffer();
-            }
-            file_name[strcspn(file_name, "\n")]= '\0';
-            if(file_name[0]== '\0')
-            {
-                printf("file name can't be empty.\n");
-                closedir(dir);
-                return;
-            }
-                while((entry = readdir(dir)) != NULL)
-                {
-                    if((strcmp(file_name , entry->d_name)== 0) &&
-                       entry->d_type != DT_DIR)
-                    {
-                        found = 1;
-                         break;
-                    }
-                }
+        return;
+    }
 
-                closedir(dir);
-                if(found == 1)
-                        {
-                           printf("file found.\n");
-                        }
-                else if (found == 0)
-                        {
-                            printf("file not found.\n");
-                        }
+    if(!read_name("ENTER FILE NAME: ", "FILE NAME", file_name, sizeof(file_name)))
+    {
+        return;
+    }
+
+    dir = open_folder(folder_name);
+    if(dir == NULL)
+    {
+        return;
+    }
+
+    while(1)
+    {
+        errno = 0;
+        entry = readdir(dir);
+        if(entry == NULL)
+        {
+            break;
+        }
+
+        if(strcmp(file_name, entry->d_name) != 0)
+        {
+            continue;
+        }
+
+        if(build_path(path, sizeof(path), folder_name, entry->d_name)
+        && is_regular_file(path))
+        {
+            found = 1;
+            break;
         }
     }
+
+    if(found)
+    {
+        errno = 0;   /* leaving the loop with break must not look like a readdir error */
+    }
+    finish_folder(dir);
+
+    if(found)
+    {
+        printf("FILE FOUND: %s%s%s\n", folder_name, PATH_SEPARATOR, file_name);
+    }
+
     else
     {
-        printf("invalid input.\n");
+        printf("FILE NOT FOUND.\n");
     }
-
-
 }
-
 
 
 void search_by_size(FileManager *fm)
 {
     char size_in_str[50];
+    char folder_name[NAME_SIZE];
+    char path[PATH_SIZE];
     char *endptr;
     DIR *dir;
     struct stat file_info;
     struct dirent *entry;
-    char folder_name[250];
-    int found =0;
-    char path[1024];
+    int found = 0;
+    (void)fm;
 
-
-
-
-    printf("DO YOU WANT TO SEARCH BY SIZE?[y/n]\n");
-    fgets(fm->buffer , 1024 , stdin);
-    if(strchr(fm->buffer, '\n') == NULL)
+    if(!confirm_search("DO YOU WANT TO SEARCH BY SIZE?[y/n]\n"))
     {
-        clear_input_buffer();
-    }
-    if(fm->buffer[0] =='n' || fm->buffer[0] == 'N')
-    {
-        printf("okay.back to menu...\n");
         return;
     }
-    if(fm->buffer[0] == 'y' || fm->buffer[0] == 'Y')
+
+    if(!read_name("FOLDER NAME: ", "FOLDER NAME", folder_name, sizeof(folder_name)))
     {
-        printf("FOLDER NAME: ");
-        fgets(folder_name, sizeof(folder_name), stdin);
-        if(strchr(folder_name, '\n') == NULL)
-        {
-            clear_input_buffer();
-        }
-        folder_name[strcspn(folder_name,"\n")] ='\0';
-        if(folder_name[0] == '\0')
-        {
-            printf("FOLDER NAME CAN'T BE EMPTY.\n");
-            return;
-        }
-        dir=opendir(folder_name);
-        if(dir == NULL)
-        {
-            printf("FOLDER NOT FOUND.\n");
-            return;
-        }
-        printf("ENTER SIZE: ");
-        fgets(size_in_str, sizeof(size_in_str), stdin);
-        if(strchr(size_in_str, '\n')== NULL)
-        {
-            clear_input_buffer();
-        }
-        long long_size=strtol(size_in_str,&endptr, 10);
-        if(size_in_str == endptr||(*endptr != '\n' && *endptr !='\0'))
-        {
-            printf("INVALID SIZE.\n");
-            closedir(dir);
-            return;
-        }
-
-        while((entry = readdir(dir))!= NULL)
-        {
-            if(entry->d_type == DT_DIR)
-            {
-                continue;
-            }
-
-            snprintf(
-                 path,
-                 sizeof(path),
-                 "%s/%s",
-                 folder_name,
-                 entry->d_name
-                 );
-
-           if(stat(path, &file_info) == 0)
-
-               {
-                    if(file_info.st_size == long_size)
-                    {
-                        printf("file name : %s\n file size: %ld\n",
-                               entry->d_name,
-                               file_info.st_size
-                               );
-
-                        found=1;
-                    }
-               }
-
-        }
-
-        closedir(dir);
+        return;
     }
 
-    if(found == 0)
+    printf("ENTER SIZE (IN BYTES): ");
+    if(!read_line(size_in_str, sizeof(size_in_str)))
     {
-        printf("no file with this size was found.\n");
+        return;
     }
 
+    errno = 0;
+    long long wanted_size = strtoll(size_in_str, &endptr, 10);
+    if(endptr == size_in_str || *endptr != '\0' || errno == ERANGE || wanted_size < 0)
+    {
+        printf("INVALID SIZE.\n");
+        return;
+    }
 
-}
-
-
-void search_recursive(const char *current_path , const char *file_name)
-{
-
-    DIR *dir;
-    struct  dirent *entry;
-
-    dir = opendir(current_path);
+    dir = open_folder(folder_name);
     if(dir == NULL)
     {
-        printf("FOLDER NOT FOUND.\n");
         return;
     }
 
-    while((entry = readdir(dir)) != NULL)
-
+    while(1)
     {
-        if(strcmp(entry->d_name,".")== 0 ||
-           strcmp(entry->d_name , "..") == 0)
+        errno = 0;
+        entry = readdir(dir);
+        if(entry == NULL)
+        {
+            break;
+        }
+
+        if(is_dot_entry(entry->d_name))
         {
             continue;
         }
 
-        if(entry->d_type != DT_DIR &&
-           strcmp(entry->d_name,file_name)==0)
+        if(!build_path(path, sizeof(path), folder_name, entry->d_name))
         {
-            printf("file found : %s/%s\n",current_path, entry->d_name);
+            printf("PATH IS TOO LONG: %s\n", entry->d_name);
+            continue;
         }
 
-        if(entry->d_type == DT_DIR)
+        if(stat(path, &file_info) != 0 || !S_ISREG(file_info.st_mode))
         {
-            char new_path[1024];
-
-            int result = snprintf(
-                    new_path,
-                    sizeof(new_path),
-                    "%s/%s",
-                    current_path,
-                    entry->d_name
-                    );
-
-
-            if(result < 0)
-            {
-                printf("ERROR CREATING PATH.\n");
-                closedir(dir);
-                return;
-            }
-
-            if(result >= sizeof(new_path))
-            {
-                printf("PAATH IS TOO LONG.\n");
-                closedir(dir);
-                return;
-            }
-            search_recursive(new_path,file_name);
+            continue;
         }
 
+        if((long long)file_info.st_size == wanted_size)
+        {
+            printf("file name : %s\nfile size : %lld\n", entry->d_name, (long long)file_info.st_size);
+            found++;
+        }
     }
 
-     closedir(dir);
+    finish_folder(dir);
+
+    if(found == 0)
+    {
+        printf("NO FILE WITH THIS SIZE WAS FOUND.\n");
+    }
+}
+
+
+/* symbolic links are not followed (lstat), so a link that points to a parent folder can't cause an endless loop */
+static void search_recursive(const char *current_path, const char *file_name, int *found)
+{
+    DIR *dir;
+    struct dirent *entry;
+    struct stat info;
+    char new_path[PATH_SIZE];
+
+    dir = opendir(current_path);
+    if(dir == NULL)
+    {
+        /* one unreadable sub folder must not stop the whole search */
+        fprintf(stderr, "[opendir] %s: %s\n", current_path, strerror(errno));
+        return;
+    }
+
+    while(1)
+    {
+        errno = 0;
+        entry = readdir(dir);
+        if(entry == NULL)
+        {
+            break;
+        }
+
+        if(is_dot_entry(entry->d_name))
+        {
+            continue;
+        }
+
+        if(!build_path(new_path, sizeof(new_path), current_path, entry->d_name))
+        {
+            printf("PATH IS TOO LONG: %s\n", entry->d_name);
+            continue;
+        }
+
+        if(LSTAT(new_path, &info) != 0)
+        {
+            fprintf(stderr, "[stat] %s: %s\n", new_path, strerror(errno));
+            continue;
+        }
+
+        if(S_ISDIR(info.st_mode))
+        {
+            search_recursive(new_path, file_name, found);
+            continue;
+        }
+
+        if(strcmp(entry->d_name, file_name) == 0)
+        {
+            printf("FILE FOUND: %s\n", new_path);
+            (*found)++;
+        }
+    }
+
+    finish_folder(dir);
 }
 
 void search(FileManager *fm)
 {
+    char file_name[NAME_SIZE];
+    int found = 0;
 
-    char file_name[250];
-
-    printf("DO YOU WANT SEARCH WITH RECURSIVE?\n");
-    fgets(fm->buffer, 1024, stdin);
-    if(strchr(fm->buffer, '\n') == NULL)
+    if(!confirm_search("DO YOU WANT TO SEARCH WITH RECURSIVE?[y/n]\n"))
     {
-        clear_input_buffer();
-    }
-    if(fm->buffer[0] == 'n' || fm->buffer[0] == 'N')
-    {
-        printf("OKAY.BACK TO MENU....\n");
         return;
     }
-    else if(fm->buffer[0] == 'Y' || fm->buffer[0] == 'y')
-    {
-        printf("FILE NAME: ");
-        fgets(file_name, sizeof(file_name) , stdin);
-        if(strchr(file_name, '\n')== NULL)
-        {
-            clear_input_buffer();
-        }
-        file_name[strcspn(file_name,"\n")]='\0';
-        if(file_name[0] == '\0')
-        {
-            printf("FILE NAME CAN'T BE EMPTY.\n");
-            return;
-        }
 
-        search_recursive(fm->current_path, file_name);
-
-    }
-    else
+    if(!read_name("FILE NAME: ", "FILE NAME", file_name, sizeof(file_name)))
     {
-        printf("INVALID INPUT.\n");
         return;
+    }
+
+    search_recursive(fm->current_path, file_name, &found);
+
+    if(found == 0)
+    {
+        printf("FILE NOT FOUND.\n");
     }
 }
 
 
 void search_menu(FileManager *fm)
 {
-    long option;
+    char option_text[16];
     char *endptr;
 
     printf("search menu:\n");
@@ -397,16 +495,15 @@ void search_menu(FileManager *fm)
     printf("3.search by size\n");
     printf("4.search with recursive\n");
 
-    fgets(fm ->buffer, 1024 , stdin);
-    if(strchr(fm->buffer, '\n')== NULL)
+    if(!read_line(option_text, sizeof(option_text)))
     {
-        clear_input_buffer();
+        return;
     }
 
-    option = strtol(fm ->buffer , &endptr , 10);
-    if(endptr == fm->buffer || (*endptr != '\0' && *endptr != '\n'))
+    long option = strtol(option_text, &endptr, 10);
+    if(endptr == option_text || *endptr != '\0')
     {
-        printf("invalid input.\n");
+        printf("INVALID INPUT.\n");
         return;
     }
 
@@ -416,21 +513,17 @@ void search_menu(FileManager *fm)
         search_by_name(fm);
         break;
 
-
     case 2:
         search_by_extension(fm);
         break;
-
 
     case 3:
         search_by_size(fm);
         break;
 
-
     case 4:
         search(fm);
         break;
-
 
     default:
         printf("INVALID INPUT.\n");
