@@ -6,7 +6,7 @@
 
 
 
-void clear_input_buffer()
+void clear_input_buffer(void)
 {
     int c;
     while((c=getchar())!= '\n' && c !=EOF)
@@ -23,7 +23,7 @@ static void report(const char *op, const char *detail)
     fprintf(stderr, "[%s] %s: %s\n", op, detail ? detail : "-", strerror(errno));
 }
 
-FILE *safe_fopen(const char *path, const char *mode, IoStatus *st)
+FILE *safe_fopen(const char *path, const char *mode, IoState *st)
 {
     if (!path || !mode) {
         if (st) *st = IO_ERR_NULL_ARG;
@@ -42,7 +42,7 @@ FILE *safe_fopen(const char *path, const char *mode, IoStatus *st)
 }
 
 
-IoStatus safe_fclose(FILE **fp)
+IoState safe_fclose(FILE **fp)
 {
     if (!fp || !*fp)
         return IO_ERR_NULL_ARG;
@@ -57,7 +57,7 @@ IoStatus safe_fclose(FILE **fp)
     return IO_OK;
 }
 
-IoStatus safe_fputs(const char *s, FILE *fp)
+IoState safe_fput(const char *s, FILE *fp)
 {
     if (!s || !fp)
         return IO_ERR_NULL_ARG;
@@ -69,7 +69,7 @@ IoStatus safe_fputs(const char *s, FILE *fp)
     return IO_OK;
 }
 
-IoStatus safe_fgets(char *buf, int size, FILE *fp)
+IoState safe_fgets(char *buf, int size, FILE *fp)
 {
     if (!buf || size <= 0 || !fp)
         return IO_ERR_NULL_ARG;
