@@ -1,131 +1,150 @@
+
 # File Manager System
 
-A command-line file manager written in C. It provides everyday file and folder operations, several kinds of search (including recursive search), input validation, and system-level error reporting through `errno` and `perror`.
+A command-line file manager written in C, with an optional Qt Widgets graphical interface.
 
-The project was built as a learning exercise to practice file I/O, directory handling, dynamic memory, and defensive programming in C.
+The project provides file and folder operations, file searching, input validation, and error handling.
+
+It was developed as a learning project to practice file I/O, directory handling, modular programming, defensive programming, and CMake-based project management.
 
 ## Features
 
-**File operations**
-- Create, read, update, delete, rename, copy, and move files
-- Update supports two modes: append and overwrite
-- Destructive actions (delete, move) ask for confirmation first
-- Copy and move refuse to overwrite an existing destination file
+### File Operations
 
-**Folder operations**
-- Create a folder
-- Delete a folder (the folder must be empty)
-- List the entries of a folder
+- Create files
+- Read files
+- Update files
+- Delete files
+- Rename files
+- Copy files
+- Move files
 
-**Search operations**
-- Search for a file by name inside a folder
-- Search for files by extension (for example `.txt`)
-- Search for files by exact size
-- Recursive search by file name, starting from the current working directory
+### Folder Operations
 
-**Robustness**
-- Every prompt validates its input: empty names, invalid choices, and out-of-range numbers are rejected
-- Long input lines are handled safely, so leftover characters do not leak into the next prompt
-- Failures of `fopen`, `opendir`, `mkdir`, `rmdir`, `remove`, `rename`, and `malloc` are reported with `perror`, which shows the real cause (for example "Permission denied")
-- Resources such as file handles, directory handles, and heap buffers are released on error paths
-- Path building uses `snprintf` with length checks to avoid buffer overflows
-- Platform macros (`MKDIR`, `PATH_SEPARATOR`) keep the code portable between Linux/macOS and Windows
+- Create folders
+- Delete empty folders
+- List folder contents
 
-## Menu
+### Search Operations
 
-```
-1.  Create file
-2.  Delete file
-3.  Update file
-4.  Read file
-5.  Rename file
-6.  Copy file
-7.  Create folder
-8.  Delete folder
-9.  List of file in folder
-10. Move file
-11. Search menu
-12. Exit
-```
+- Search by file name
+- Search by extension
+- Search by file size
+- Recursive file search
 
-The search menu offers:
+### Error Handling
 
-```
-1. Search by name
-2. Search by extension
-3. Search by size
-4. Search with recursive
-```
+- Input validation
+- File and directory error handling
+- Resource cleanup
+- Path length validation
+- Safe file I/O helpers
+
+## Technologies
+
+- C
+- CMake
+- Qt Widgets (optional GUI)
 
 ## Project Structure
 
-```
+```text
 .
+├── CMakeLists.txt
+├── README.md
 ├── include/
-│   ├── file_manager.h          # FileManager struct (shared state)
-│   ├── file_operations.h       # File operation declarations
-│   ├── folder_operations.h     # Folder operation declarations
-│   ├── search_operations.h     # Search declarations
-│   └── input_utls.h            # Input helper declarations
+│   ├── file_manager.h
+│   ├── file_operations.h
+│   ├── folder_operations.h
+│   ├── search_operations.h
+│   └── input_utls.h
+│
 ├── src/
-│   ├── main.c                  # Entry point and menu loop
-│   ├── file_operations.c       # Create, read, update, delete, rename, copy, move
-│   ├── folder_operations.c     # Create, delete, and list folders
-│   ├── search_operations.c     # Search by name, extension, size, and recursive search
-│   ├── input_utls.c            # Input buffer helper
-│   └── file_manager.c          # Reserved for shared helpers
-├── logs/                       # Reserved for a future activity log
-└── README.md
+│   ├── main.c
+│   ├── file_manager.c
+│   ├── file_operations.c
+│   ├── folder_operations.c
+│   ├── search_operations.c
+│   └── input_utls.c
+│
+└── qt-ui/
+    ├── CMakeLists.txt
+    ├── main.cpp
+    └── README.md
 ```
 
 ## Requirements
 
-- A C compiler such as `gcc` or `clang`
-- Linux or macOS, or Windows with a compatible toolchain such as MinGW
+- CMake 3.20 or newer
+- A C compiler such as GCC, Clang, or MinGW
+- Qt 5 or Qt 6 for the optional graphical interface
 
 ## Build
 
-From the project root, compile all source files together:
+### Command-Line Application
+
+From the project root:
 
 ```bash
-gcc src/*.c -Iinclude -Wall -Wextra -o file_manager
+cmake -S . -B build
+cmake --build build
+```
+
+The executable will be generated inside the build directory.
+
+On Windows with MinGW, it will usually be:
+
+```text
+build/file_manager.exe
+```
+
+On Linux:
+
+```text
+build/file_manager
 ```
 
 ## Run
 
+On Windows:
+
 ```bash
-./file_manager
+build/file_manager.exe
 ```
 
-Enter the number of the operation you want, then follow the prompts. Enter `12` to exit.
+On Linux:
 
-## Example
+```bash
+./build/file_manager
+```
 
+## Build the Qt GUI
+
+The Qt interface is optional.
+
+To enable it:
+
+```bash
+cmake -S . -B build -DFILE_MANAGER_BUILD_QT=ON
+cmake --build build
 ```
-enter the number of option you want to do:
-1.Create file
-...
-12.Exit
-11
-search menu:
-1.search by name
-2.search by extension
-3.search by size
-4.search with recursive
-```
+
+Qt development packages and a compatible compiler must be installed.
 
 ## Notes
 
-- Run the program in a directory where you have the read and write permissions you need.
-- File and folder names are entered relative to the directory where the program runs, unless you type a full path.
+- Run the application in a directory where you have the required permissions.
+- Relative paths are resolved from the application's current working directory.
+- The GUI and command-line application are separate executable targets.
 
-## Roadmap
+## Future Improvements
 
-- Write errors and actions to a log file inside `logs/`
-- Return status codes from the operations instead of `void`, so callers can react to failures
-- Add a Makefile or CMake build
 - Add automated tests
+- Improve error reporting and operation return values
+- Add activity logging
+- Improve GUI integration with the core library
+- Add cross-platform build verification
 
 ## License
 
-This project is open source and available for personal and educational use.
+This project is intended for personal and educational use.
